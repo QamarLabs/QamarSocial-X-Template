@@ -1,10 +1,9 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAuthState } from "react-firebase-hooks/auth";
 import { faker } from "@faker-js/faker";
 import { shuffle } from "lodash";
 
-import { auth } from "../../../firebase/firebase";
 
 const years = [
   "2011",
@@ -30,7 +29,6 @@ type ContentProps = {
 
 const Content: React.FC<ContentProps> = ({ userPName, userPhotoUrl }) => {
   const router = useRouter();
-  const [user] = useAuthState(auth);
   const [bannerImage, setBannerImage] = useState<any>("");
   const [userYear, setUseYear] = useState<any>("");
 
@@ -113,13 +111,13 @@ const Content: React.FC<ContentProps> = ({ userPName, userPhotoUrl }) => {
                 </div>
               </div>
             </div>
-            {userPName === user?.displayName && (
+            {/* {userPName === user?.displayName && (
               <div className="flex flex-col text-right">
                 <button className="justify-center max-h-max whitespace-nowrap focus:outline-none focus:ring  max-w-max border bg-transparent border-blue-500 text-blue-500 hover:border-blue-800 flex items-center hover:shadow-lg font-bold py-2 px-4 rounded-full mr-0 ml-auto">
                   Edit Profile
                 </button>
               </div>
-            )}
+            )} */}
           </div>
 
           <div className="space-y-1 justify-center w-full mt-3 ml-3">

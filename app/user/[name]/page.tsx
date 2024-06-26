@@ -1,27 +1,20 @@
 import React from "react";
-import { motion } from "framer-motion";
+// import { motion } from "framer-motion";
+import dynamic from "next/dynamic";
+const MainProfile = dynamic(() => import('@components/userProfile/MainProfile'), { ssr: false });
 
-import MainProfile from "../../components/userProfile/MainProfile";
-import { useParams } from "next/navigation";
-import { fetchUserTweets } from "@utils/fetchUserTweets";
-import { fetchUserInfo } from "@utils/fetchUserInfo";
-
-const UserProfule = async () => {
-  const params = useParams();
-  const { name } = params;
-  const username = name as string;
-  const tweets = await fetchUserTweets(username);
-  const userInfo = await fetchUserInfo(username);
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      viewport={{ once: true }}
-      className="dark:bg-[#000000] h-screen overflow-hidden"
-    >
-      <MainProfile tweets={tweets ?? []} userInfo={userInfo!} />
-    </motion.div>
-  );
+const UserProfile = async () => {
+  return <MainProfile />;
+  // return (
+  //   <motion.div
+  //     initial={{ opacity: 0 }}
+  //     whileInView={{ opacity: 1 }}
+  //     viewport={{ once: true }}
+  //     className="dark:bg-[#000000] h-screen overflow-hidden"
+  //   >
+  //     <MainProfile />
+  //   </motion.div>
+  // );
 };
 
-export default UserProfule;
+export default UserProfile;

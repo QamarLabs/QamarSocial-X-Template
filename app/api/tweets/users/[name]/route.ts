@@ -29,10 +29,9 @@ async function GET(
       "tweet"
     );
 
-    return NextResponse.json({ tweets: tweets && tweets.length ? tweets : [] });
+    return NextResponse.json({ tweets: tweets && tweets.length ? tweets : [], success: true });
   } catch (err) {
-    console.log("Fetch Tweet Error:", err);
-    return NextResponse.error();
+    return NextResponse.json({ message: 'Fetch tweets error', success: false });
   }
 }
 

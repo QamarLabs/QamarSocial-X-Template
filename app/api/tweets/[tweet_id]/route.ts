@@ -29,13 +29,13 @@ async function GET(
     const tweet = tweets ? tweets[0] : undefined;
 
     if (tweet) {
-      return NextResponse.json({ tweet });
+      return NextResponse.json({ tweet, success: true });
     } else {
-      return new Error(`Tweet not found based on status id ${tweetId}`);
+      throw new Error(`Tweet not found based on status id ${tweetId}`);
     }
   } catch (err) {
-    console.log("Fetch Tweet Error:", err);
-    return NextResponse.error();
+    return NextResponse.json({ message: "Fetch Tweet error!", success: false });
+
   }
 }
 
@@ -84,8 +84,8 @@ async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.log("Fetch Tweet Error:", err);
-    return NextResponse.error();
+    return NextResponse.json({ message: "Patch Tweet error!", success: false });
+
   }
 }
 

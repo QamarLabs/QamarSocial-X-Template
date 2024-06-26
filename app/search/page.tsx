@@ -20,7 +20,8 @@ const SearchPage =  async () => {
 
   return (
     <React.Suspense fallback={<h1>Loading...</h1>}>
-      <PageContainer title={`${topic ? "Trending - " + topic : "Search"}`} tweets={searchedTweets}>
+      <PageContainer title={`${topic ? "Trending - " + topic : "Search"}`}>
+        <div/>
       </PageContainer>
     </React.Suspense>
   );

@@ -56,8 +56,7 @@ async function POST(
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.log("Fetch Tweet Error:", err);
-    return NextResponse.error();
+    return NextResponse.json({ message: "Add bookmarks error!", success: false });
   }
 }
 

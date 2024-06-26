@@ -19,7 +19,7 @@ const authOptions: NextAuthOptions = {
     }),
   ],
   pages: {
-    signIn: "/auth/signin",
+    signIn: "/",
   },
   callbacks: {
     async session({ session, token, user }) {

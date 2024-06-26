@@ -29,10 +29,9 @@ async function GET(
       "user"
     );
     const user = users && users.length ? users[0] : undefined;
-    return NextResponse.json({ user });
+    return NextResponse.json({ user, success: true });
   } catch (err) {
-    console.log("Fetch Tweet Error:", err);
-    return NextResponse.error();
+    return NextResponse.json({ message: "Fetch user error!", success: false });
   }
 }
 

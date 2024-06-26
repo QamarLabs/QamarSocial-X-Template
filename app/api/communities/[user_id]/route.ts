@@ -42,15 +42,14 @@ async function GET(
     const twts = tweets?.length ? tweets : [];
 
     if (twts) {
-      return NextResponse.json({ tweets: twts });
+      return NextResponse.json({ tweets: twts, success: true  });
     } else {
-      return new Error(
+      throw new Error(
         `Communities tweets not found based on user id ${userId}`
       );
     }
   } catch (err) {
-    console.log("Fetch Tweet Error:", err);
-    return NextResponse.error();
+    return NextResponse.json({ message: "Fetch bookmarks error!", success: false });
   }
 }
 

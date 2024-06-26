@@ -39,8 +39,7 @@ async function POST(
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.log("Fetch Tweet Error:", err);
-    return NextResponse.error();
+    return NextResponse.json({ message: "Add list error!", success: false });
   }
 }
 
@@ -109,8 +108,7 @@ async function PATCH(
 
     return NextResponse.json({ success: true });
   } catch (err) {
-    console.log("Fetch Tweet Error:", err);
-    return NextResponse.error();
+    return NextResponse.json({ message: "Patch list error!", success: false });
   }
 }
 
