@@ -49,9 +49,9 @@ function Feed({ title, params, tweets }: Props) {
       </div>
       {/* <div>{user && <TweetBox setTweets={setTweets} />}</div> */}
       <div>
-        {(tweets ?? []).map((tweet) => (
+        {(tweets ?? []).map((tweet, tweetKey) => (
           <TweetComponents
-          key={tweet._id} tweet={tweet} pushNote={true} userId={user ? (user as any)['_id'] : ""}  />
+          key={tweet._id  ?? tweetKey} tweet={tweet} pushNote={true} userId={user ? (user as any)['_id'] : ""}  />
         ))}
       </div>
     </div>

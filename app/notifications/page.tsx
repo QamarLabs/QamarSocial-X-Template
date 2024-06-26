@@ -7,7 +7,7 @@ const NotificationTabs = dynamic(() => import("../components/NotificationTabs"),
 async function NotificationsPage() {
   const topic = "Notifications";
   const searchedTweets = await fetchTweets();
-
+  console.log('process.env.NEXT_PUBLIC_RUN_MODE', process.env.NEXT_PUBLIC_RUN_MODE);
 
   return (
     <>
