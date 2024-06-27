@@ -1,5 +1,5 @@
 import { Params, retrieveQueryString } from ".";
-import { Tweet } from "../typings";
+import { Tweet, Comment } from "../typings";
 
 export const fetchTweet = async (statusId: string) => {
   try {
@@ -11,7 +11,8 @@ export const fetchTweet = async (statusId: string) => {
     
     const data = await res.json();
     const tweet: Tweet = data.tweet;
-    return tweet;
+    const comments: Comment[] = data.comments;
+    return {tweet, comments };
   } catch(error)  {
     console.log("Error:", error);
   }

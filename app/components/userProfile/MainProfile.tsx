@@ -38,7 +38,7 @@ const MainProfile= () => {
     <div className="col-span-7 scrollbar-hide border-x max-h-screen overflow-scroll lg:col-span-5 dark:border-gray-800">
       <div>
         {userInfo && (
-          <UserHeader userPName={userInfo.username} userPhotoUrl={""} />
+          <UserHeader username={userInfo.username} avatar={userInfo.avatar} bgThumbnail={userInfo.bgThumbnail} />
         )}
       </div>
       <Feed

@@ -1,9 +1,17 @@
 const { faker } = require("@faker-js/faker");
+
+const generateRandomImage = () => {
+  const images = [ faker.image.animals(), faker.image.people(), faker.image.nightlife(), faker.image.sports()];
+  const randomIdx = Math.floor(Math.random() * images.length);
+  return images[randomIdx]
+}
 const generateRandomUser = () => ({
   _id: faker.datatype.uuid(),
   _createdAt: faker.date.past().toISOString(),
   _updatedAt: faker.date.recent().toISOString(),
   username: faker.internet.userName(),
+  bgThumbnail: faker.image.city(),
+  avatar: faker.image.people(),
   countryOfOrigin: faker.address.country(),
   email: faker.internet.email(),
   phone: faker.phone.number(),
@@ -16,7 +24,7 @@ const generateRandomUser = () => ({
     "widowed",
   ]),
   hobbies: faker.helpers.arrayElements(
-    ["reading", "traveling", "sports", "cooking", "music"],
+    ["reading", "traveling", "sports", "cooking", "music", "technology", "joe biden"],
     3
   ),
   preferredMadhab: faker.helpers.arrayElement([
@@ -38,10 +46,10 @@ const generateRandomUser = () => ({
   islamicStudyTopics: faker.helpers.arrayElements(
     ["Fiqh", "Aqidah", "Tafsir", "Hadith"],
     2
-  ),
+  )
 });
 
-const generateRandomTweet = (username) => ({
+const generateRandomTweet = (username, profileImg) => ({
   _id: faker.datatype.uuid(),
   _createdAt: faker.date.past().toISOString(),
   _updatedAt: faker.date.recent().toISOString(),
@@ -50,8 +58,8 @@ const generateRandomTweet = (username) => ({
   blockTweet: faker.datatype.boolean(),
   text: faker.lorem.sentence(100),
   username: username,
-  profileImg: faker.image.avatar(),
-  image: faker.image.imageUrl(),
+  profileImg: profileImg,
+  image: generateRandomImage(),
 });
 
 const generateRandomComment = (tweetId, username, profileImg) => ({

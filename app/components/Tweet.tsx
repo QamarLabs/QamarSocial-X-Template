@@ -15,25 +15,21 @@ import { stopPropagationOnClick } from "@utils/index";
 import { likedTweet } from "@utils/likedTweet";
 
 interface Props {
-  tweet: Tweet;
+  tweet:Tweet;
+  comments?: Comment[];
   userId: string;
   pushNote: boolean;
 }
 
-function TweetComponent({
-  tweet,
-  userId,
-  pushNote,
-}: Props) {
+function TweetComponent({ tweet, comments, userId, pushNote }: Props) {
   // const [user] = useAuthState(auth);
   const router = useRouter();
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [currentComments, setCurrentComments] = useState<Comment[]>(comments ?? []);
   const [input, setInput] = useState<string>("");
   const [commentBoxOpen, setCommentBoxOpen] = useState<boolean>(false);
-
   const refreshComments = async () => {
     const comments: Comment[] = await fetchComments(tweet._id);
-    setComments(comments);
+    setCurrentComments(comments);
   };
 
   // useEffect(() => {
@@ -87,7 +83,7 @@ function TweetComponent({
 
   const navigateToTweet = () => {
     router.push(`status/${tweet._id}`);
-  }
+  };
 
   // useEffect(() => {
   //   if (userName === tweet.username) {
@@ -100,13 +96,16 @@ function TweetComponent({
     router.push("/auth/signin");
   }; */
   const onLikedTweet = async () => {
-    debugger;
-    const isLikedAlready = tweet.likes && tweet.likes.includes(userId) ? true : false;
+    const isLikedAlready =
+      tweet.likes && tweet.likes.includes(userId) ? true : false;
     await likedTweet(tweet._id, userId, isLikedAlready);
   };
-  
+
   return (
-    <div className="flex flex-col space-x-3 border-y border-gray-100 p-5 hover:shadow-lg dark:border-gray-800 dark:hover:bg-[#000000]" onClick={navigateToTweet}>
+    <div
+      className="flex flex-col space-x-3 border-y border-gray-100 p-5 hover:shadow-lg dark:border-gray-800 dark:hover:bg-[#000000]"
+      onClick={navigateToTweet}
+    >
       <div className="flex space-x-3 cursor-pointer">
         <img
           className="h-10 w-10 rounded-full object-cover "
@@ -116,12 +115,7 @@ function TweetComponent({
         />
         <div>
           <div className="flex item-center space-x-1">
-            <p
-              className={
-                `font-bold mr-1`
-              }
-              onClick={handleNavigatePage}
-            >
+            <p className={`font-bold mr-1`} onClick={handleNavigatePage}>
               {tweet.username}
             </p>
             {userId === tweet.username && (
@@ -164,7 +158,9 @@ function TweetComponent({
         <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          onClick={e => stopPropagationOnClick(e, () => setCommentBoxOpen(!commentBoxOpen))}
+          onClick={(e) =>
+            stopPropagationOnClick(e, () => setCommentBoxOpen(!commentBoxOpen))
+          }
           className="flex cursor-pointer item-center space-x-3 text-gray-400"
         >
           <svg
@@ -182,7 +178,7 @@ function TweetComponent({
             />
           </svg>
 
-          <p className="text-center">{comments.length}</p>
+          <p className="text-center">{currentComments.length}</p>
         </motion.div>
         <motion.div
           whileHover={{ scale: 1.1 }}
@@ -213,7 +209,10 @@ function TweetComponent({
           whileTap={{ scale: 0.9 }}
           className="flex cursor-pointer item-center space-x-3 text-gray-400"
         >
-          <HeartIcon onClick={e => stopPropagationOnClick(e, onLikedTweet)} className="h-5 w-5" />
+          <HeartIcon
+            onClick={(e) => stopPropagationOnClick(e, onLikedTweet)}
+            className="h-5 w-5"
+          />
           <p className="text-center">
             {faker.datatype.number({ min: 10, max: 500 })}
           </p>
@@ -253,24 +252,24 @@ function TweetComponent({
         //         </button>
         //       </form>
         //     </motion.div>
-        //   ) : 
-          // (
-            <div className="flex text-red-500 justify-center m-auto font-semibold">
-              <p>You Need To Sign IN</p>
-            </div>
+        //   ) :
+        // (
+        <div className="flex text-red-500 justify-center m-auto font-semibold">
+          <p>You Need To Sign IN</p>
+        </div>
         //   )}
         // </>
       )}
       {commentBoxOpen && (
         <>
-          {comments?.length > 0 && (
+          {currentComments?.length > 0 && (
             <motion.div
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               className="my-2 mt-5 max-h-44 space-y-5 overflow-y-scroll border-t border-gray-100 p-5 scrollbar-thin scrollbar-thumb-blue-100"
             >
-              {comments.map((comment) => (
+              {currentComments.map((comment) => (
                 <div key={comment._id} className="flex space-x-2">
                   <hr className="top-10 h-8 border-x border-twitter/30" />
                   <img
@@ -289,7 +288,7 @@ function TweetComponent({
                         date={comment._createdAt}
                       />
                     </div>
-                    <p>{comment.comment}</p>
+                    <p>{comment.text}</p>
                   </div>
                 </div>
               ))}

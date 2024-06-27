@@ -26,10 +26,17 @@ async function GET(
       { tweetId },
       "t"
     );
+    const commentsForTweet = await read(
+      session,
+      "MATCH (t: Tweet {_id: $tweetId})-[:HAS_COMMENT]->(c:Comment) RETURN c LIMIT 10",
+      { tweetId },
+      "c"
+    );
+    
     const tweet = tweets ? tweets[0] : undefined;
 
     if (tweet) {
-      return NextResponse.json({ tweet, success: true });
+      return NextResponse.json({ tweet, comments: commentsForTweet, success: true });
     } else {
       throw new Error(`Tweet not found based on status id ${tweetId}`);
     }

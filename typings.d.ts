@@ -21,11 +21,14 @@ export interface User extends UserInfo {
   favoriteQuranReciters?: string[];
   favoriteIslamicScholars?: string[];
   islamicStudyTopics?: string[];
+  verified: boolean;
 }
 
 export type UserInfo = {
   username: string;
   countryOfOrigin: string;
+  avatar: string;
+  bgThumbnail: string;
   email: string;
   phone?: string;
   personalInfo?: PersonalInfo;
@@ -40,22 +43,29 @@ export type TweetBody = {
 };
 
 export type CommentBody = {
-  comment: string;
-  tweetId: string;
-  username: string;
-  profileImg: string;
+  // comment: string;
+  // tweetId: string;
+  // username: string;
+  // profileImg: string;
 };
 
 export interface Comment extends CommentBody {
+  // _createdAt: string;
+  // _id: string;
+  // _updatedAt: string;
+  // _rev: string;
+  // _type: "comment";
+  // tweet: {
+  //   _ref: string;
+  //   _type: "reference";
+  // };
+  image:  string;
   _createdAt: string;
   _id: string;
+  text: string;
+  profileImg: string;
   _updatedAt: string;
-  _rev: string;
-  _type: "comment";
-  tweet: {
-    _ref: string;
-    _type: "reference";
-  };
+  username: string;
 }
 
 /// Exceptions ///////////////////

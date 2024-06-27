@@ -22,6 +22,7 @@ import { useRouter } from "next/navigation";
 import Modal from "./Modal";
 import Image from "next/image";
 import { stopPropagationOnClick } from "@utils/index";
+import { User } from "typings";
 
 type SideBarProps = {
   isShow: boolean;
@@ -38,10 +39,9 @@ const SideBar: React.FC<SideBarProps> = ({ isShow, isHome }) => {
   const closeModal = () => setModalOpen(false);
   const handleGoogleSignIn = () => signIn("google");
 
-  const handleDropdownEnter = () => {
-    setIsDropdownOpen(!isDropdownOpen);
-  };
-
+  const handleDropdownEnter = () => setIsDropdownOpen(!isDropdownOpen);
+  // console.log("session.user:", session!.user);
+  const username = session ? (session!.user as User).username : "";
   return (
     <>
       <div className="col-span-1 sm:col-span-2 flex flex-col item-center px-4 md:items-start">
@@ -74,8 +74,8 @@ const SideBar: React.FC<SideBarProps> = ({ isShow, isHome }) => {
 
           )
         } */}
-        <div className="relative" onClick={handleDropdownEnter}>
-          <SidebarRow Icon={DotsCircleHorizontalIcon} title="More" />
+        <div className="relative more-container" >
+          <SidebarRow Icon={DotsCircleHorizontalIcon} title="More"onClick={handleDropdownEnter} />
           {isDropdownOpen && (
             <div className="absolute left-0 bottom-100 mt-2 w-48 rounded-md shadow-lg ring-1 bg-white dark:bg-[#000000] ring-black ring-opacity-5 z-40">
               <div
@@ -93,9 +93,7 @@ const SideBar: React.FC<SideBarProps> = ({ isShow, isHome }) => {
                   <SidebarRow
                     Icon={LogoutIcon}
                     title="Sign In"
-                    onClick={(e: React.MouseEvent) =>
-                      stopPropagationOnClick(e, openModal)
-                    }
+                    onClick={openModal}
                   />
                 )}
               </div>
@@ -108,7 +106,7 @@ const SideBar: React.FC<SideBarProps> = ({ isShow, isHome }) => {
             <hr />
             {/* <div className="flex align-center p-2 cursor-pointer hover:opacity-75"> */}
             <div
-              onClick={() => router.push(`/users/${session.user!.email}`)}
+              onClick={() => router.push(`/users/${username}`)}
               className="group flex max-w-fit
         cursor-pointer items-center space-x-2 rounded-full px-4 py-3
         transition-all duration-200 hover:bg-purple-200 dark:hover:bg-gray-600 mb-1 mt-1"

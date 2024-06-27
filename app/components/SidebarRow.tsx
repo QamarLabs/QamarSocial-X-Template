@@ -27,7 +27,7 @@ function SidebarRow({
   const sidebarOnClick = async (e: React.MouseEvent) => {
     if (!nonRoutableTitles.includes(title)) router.push(href!);
     else {
-      if (title === "Sign In") onClick!(e);
+      if (title === "Sign In" || title === "More") onClick!(e);
       if (title === "Sign Out") await signOut();
     }
   };

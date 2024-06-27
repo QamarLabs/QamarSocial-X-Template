@@ -18,7 +18,6 @@ async function GET(
 
   try {
     // Adjust the Cypher query to fetch the tweet by ID
-
     const tweets = await read(
       session,
       `

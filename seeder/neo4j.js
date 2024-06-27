@@ -40,15 +40,18 @@ async function seed(users, tweets, comments) {
               countryOfOrigin: $countryOfOrigin,
               email: $email,
               phone: $phone,
+              bgThumbnail: $bgThumbnail,
+              avatar: $avatar,
               dateOfBirth: $dateOfBirth,
               geoId: $geoId,
               maritalStatus: $maritalStatus,
-              hobbies: $hobbies,
               preferredMadhab: $preferredMadhab,
+              hobbies: $hobbies,
               frequentMasjid: $frequentMasjid,
               favoriteQuranReciters: $favoriteQuranReciters,
               favoriteIslamicScholars: $favoriteIslamicScholars,
-              islamicStudyTopics: $islamicStudyTopics
+              islamicStudyTopics: $islamicStudyTopics,
+              verified: true
             })`,
             {...user} // Pass the flattened properties as parameters
           );
@@ -87,35 +90,38 @@ async function seed(users, tweets, comments) {
 
           const currTweetCommentsQueue = comments.slice().filter(c => c.tweetId === currTweet?._id);
           while(currTweetCommentsQueue.length) {
+             const currentCommentData = currTweetCommentsQueue.pop();
+             const currentComment = currentCommentData.comments[0];
               await write(
                 session,
-                `MATCH (u:User {username: $username})
-                        CREATE (u)-[:POSTED]->(t:Tweet {
-                          _id: $_id,
-                          _createdAt: $_createdAt,
-                          _updatedAt: $_updatedAt,
-                          _rev: $_rev,
-                          _type: $_type,
-                          blockTweet: $blockTweet,
-                          text: $text,
-                          username: $username,
-                          profileImg: $profileImg,
-                          image: $image
-                        })`,
+                `
+                MATCH (u:User {username: $username}), (t:Tweet {_id: $tweetId})
+                  CREATE (u)-[:COMMENTED]->(c:Comment {
+                    _id: $commentId,
+                    _createdAt: $createdAt,
+                    _updatedAt: $updatedAt,
+                    text: $text,
+                    username: $username,
+                    profileImg: $profileImg,
+                    image: $image
+                  }),
+                  (t)-[:HAS_COMMENT]->(c)
+
+                `,
                 {
-                  _id: currTweet?._id,
-                  _createdAt: currTweet?._createdAt,
-                  _updatedAt: currTweet?._updatedAt,
-                  _rev: currTweet?._rev,
-                  _type: currTweet?._type,
-                  blockTweet: currTweet?.blockTweet,
-                  text: currTweet?.text,
-                  username: currTweet?.username,
-                  profileImg: currTweet?.profileImg,
-                  image: currTweet?.image,
+                  tweetId: currentCommentData.tweetId,
+                  commentId: currentComment._id,
+                  username: currentComment.username,
+                  text: currentComment.text,
+                  profileImg: currentComment.profileImg,
+                  createdAt: currentComment._createdAt,
+                  updatedAt: currentComment._updatedAt,
+                  image: ""
                 }
               );
+              continue;
           }
+          continue;
         }
         console.log("Seeded Data Successfully.");
 

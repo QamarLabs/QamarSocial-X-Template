@@ -45,9 +45,9 @@ const authOptions: NextAuthOptions = {
       try {
         const driver = defineDriver();
         const dSession = driver.session();
-
+        const username = getEmailUsername(profile.email);
         const user = await read(dSession, reusableEmailQuery, {
-          username: profile.email,
+          username: username,
         });
         // console.log("Neo4j User:", user);
         if (!user?.length)
@@ -60,9 +60,10 @@ const authOptions: NextAuthOptions = {
                 _updatedAt: $_updatedAt,
                 username: $username,
                 countryOfOrigin: $countryOfOrigin,
-                email: $username,
+                email: $email,
                 phone: $phone,
-                profileImg: $profileImg,
+                bgThumbnail: $bgThumbnail,
+                avatar: $avatar,
                 dateOfBirth: $dateOfBirth,
                 geoId: $geoId,
                 maritalStatus: $maritalStatus,
@@ -78,12 +79,14 @@ const authOptions: NextAuthOptions = {
               _id: faker.datatype.uuid(),
               _createdAt: new Date().toUTCString(),
               _updatedAt: null,
-              username: profile.email,
+              username: username,
+              email: profile.email,
               countryOfOrigin: null,
               phone: null,
-              profileImg: (profile as any)["picture"]
+              avatar: (profile as any)["picture"]
                 ? (profile as any)["picture"]
                 : null,
+              bgThumbnail: faker.image.city(),
               dateOfBirth: null,
               geoId: null,
               maritalStatus: null,

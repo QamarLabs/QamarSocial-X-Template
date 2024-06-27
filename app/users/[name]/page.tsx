@@ -1,6 +1,7 @@
 import React from "react";
 // import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
+import { getServerSession } from "next-auth";
 const MainProfile = dynamic(() => import('@components/userProfile/MainProfile'), { ssr: false });
 
 const UserProfile = async () => {

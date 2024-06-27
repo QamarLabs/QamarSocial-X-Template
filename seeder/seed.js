@@ -1,6 +1,6 @@
 require('dotenv').config({ path: '../.env.local' });
 const { generateRandomTweet, generateRandomUser, generateRandomComment } = require("./faker");
-const { defineDriver, seed } = require("./neo4j");
+const { seed } = require("./neo4j");
 
 function getRandomEntities(num, entities) {
     let result = [];
@@ -17,13 +17,13 @@ async function main() {
         const fakeUsers = Array.from({ length: 10 }, generateRandomUser);
 
         const fakeTweets = fakeUsers.flatMap((user) =>
-            Array.from({ length: 10 }, () => generateRandomTweet(user.username))
+            Array.from({ length: 10 }, () => generateRandomTweet(user.username, user.avatar))
         );
         const randomTweets = getRandomEntities(7, fakeTweets);
         const fakeComments = randomTweets.flatMap((twt) =>
             Array.from({ length: 10 }, () => generateRandomComment(twt._id ,twt.username, twt.profileImg))
         );
-        
+
         await seed(fakeUsers, fakeTweets, fakeComments);
     } catch (err) {
         console.log("Error:", err);

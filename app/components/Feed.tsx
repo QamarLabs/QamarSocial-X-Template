@@ -9,10 +9,6 @@ import toast, { Toaster } from "react-hot-toast";
 import { GetServerSideProps } from "next";
 import { Params } from "@utils/index";
 import { useSession } from "next-auth/react";
-// import { useAuthState } from "react-firebase-hooks/auth";
-// import { auth } from "../firebase/firebase";
-
-
 
 interface Props {
   title: string;
@@ -22,7 +18,7 @@ interface Props {
 
 function Feed({ title, params, tweets }: Props) {
   const { data: session } = useSession();
-  const { user  } = session ?? {};
+  const { user } = session ?? {};
 
   const [filteredTweets, setFilteredTweets] = useState<Tweet[]>([]);
 
@@ -51,7 +47,11 @@ function Feed({ title, params, tweets }: Props) {
       <div>
         {(tweets ?? []).map((tweet, tweetKey) => (
           <TweetComponents
-          key={tweet._id  ?? tweetKey} tweet={tweet} pushNote={true} userId={user ? (user as any)['_id'] : ""}  />
+            key={tweet._id ?? tweetKey}
+            tweet={tweet}
+            pushNote={true}
+            userId={user ? (user as any)["_id"] : ""}
+          />
         ))}
       </div>
     </div>
