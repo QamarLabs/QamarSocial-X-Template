@@ -1,4 +1,5 @@
-import { Session, auth, driver } from "neo4j-driver";
+import { Node, Session, auth, driver } from "neo4j-driver";
+import { TweetToDisplay } from "typings";
 
 export function defineDriver() {
   const connectionURI = process.env.NEXT_PUBLIC_NEO4J_CONNECTION_URI!;
@@ -8,11 +9,24 @@ export function defineDriver() {
   return dr;
 }
 
-export async function read(session: Session, cypher = "", params = {}, alias?: string | undefined) {
+export async function read(session: Session, cypher = "", params = {}, alias?: string | string[] | undefined) {
   try {
     // Execute cypher statement
     const { records } = await session.run(cypher, params);
-    return records.map((record) => record.get(alias ?? "u").properties);
+    return records.map((record) => {
+      if(Array.isArray(alias)) {
+        var result: {[key: string]: any[] } = {};
+
+        for(const aIdx in alias) {
+           const aKey = alias[aIdx];
+           const recordBasedOnAlias = record.get(aKey);
+           result[aKey] = recordBasedOnAlias.length ? recordBasedOnAlias.map((r: Node) => r.properties) : recordBasedOnAlias.properties ?? [];
+          }
+
+        return result;
+      }
+      return record.get(alias ?? "u").properties
+    });
   } catch (error) {
     console.log("ERror:", error);
   } finally {

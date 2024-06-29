@@ -1,7 +1,7 @@
-export const likedTweet = async (statusId: string, userId: string, liked: boolean) => {
+export const likeTweet = async (statusId: string, userId: string, liked: boolean) => {
   try {
     console.log('userId:', userId);
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/tweets/${statusId}`, { method: "PATCH", body: JSON.stringify({
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/tweets/${statusId}/liked`, { method: "PATCH", body: JSON.stringify({
         userId,
         liked
     }) });

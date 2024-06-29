@@ -10,16 +10,25 @@ import { motion } from "framer-motion";
 import { useAuthState } from "react-firebase-hooks/auth";
 import toast from "react-hot-toast";
 
-import { Tweet, TweetBody } from "../../typings";
+import { TweetBody, TweetToDisplay } from "../../typings";
 import { useSession } from "next-auth/react";
-import { getEmailUsername } from "@utils/index";
-import { fetchTweets } from "@utils/fetchTweets";
+import {
+  Params,
+  defaultSearchParams,
+  getEmailUsername,
+  isTweetSearchAMatch,
+} from "@utils/neo4j/index";
+import { fetchTweets } from "@utils/tweets/fetchTweets";
+import { addTweet } from "@utils/tweets/addTweet";
 
 interface Props {
-  setTweets: Dispatch<SetStateAction<Tweet[]>>;
+  tweets: TweetToDisplay[];
+  setTweets: (twts: TweetToDisplay[]) => void;
+  searchParams: Params;
+  setSearchParams?: (sParams: Params) => void;
 }
 
-function TweetBox({ setTweets }: Props) {
+function TweetBox({ tweets, setTweets, searchParams, setSearchParams }: Props) {
   const { data: session } = useSession();
   const [input, setInput] = useState<string>("");
   const [image, setImage] = useState<string>("");
@@ -44,32 +53,36 @@ function TweetBox({ setTweets }: Props) {
       profileImg: session!.user?.image!,
       image: image,
     };
-    const result = await fetch(`api/addTweet`, {
-      body: JSON.stringify(tweetInfo),
-      method: "POST",
-    });
 
-    const json = await result.json();
+    // const result = await addTweet(tweetInfo);
+    await addTweet(tweetInfo);
 
-    const newTweets = await fetchTweets({ });
+    const newTweets = await fetchTweets(defaultSearchParams);
     setTweets(newTweets!);
 
     toast("Tweet Posted", {
       icon: "🚀",
     });
-    return json;
   };
 
-  const handleSubmit = (
+  const handleSubmit = async (
     e: React.MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
   ) => {
     e.preventDefault();
 
-    postTweet();
+    await postTweet();
 
     setInput("");
     setImage("");
     setImageUrlBoxOpen(false);
+  };
+
+  const searchCurrentTweets = () => {
+    toast.success("Searching most popular tweets");
+    const filteredTweets = tweets
+      .slice()
+      .filter((twt) => isTweetSearchAMatch(twt, searchParams.search_term!));
+    setTweets(filteredTweets);
   };
 
   return (
@@ -101,7 +114,10 @@ function TweetBox({ setTweets }: Props) {
               transition-transform duration-150 ease-out
               hover:scale-150"
               />
-              <SearchCircleIcon className="h-5 w-5" />
+              <SearchCircleIcon
+                onClick={searchCurrentTweets}
+                className="h-5 w-5"
+              />
               <EmojiHappyIcon className="h-5 w-5" />
               <CalendarIcon className="h-5 w-5" />
               <LocationMarkerIcon className="h-5 w-5" />

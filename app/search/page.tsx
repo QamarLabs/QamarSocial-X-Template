@@ -1,28 +1,12 @@
-// pages/search.tsx
 import React from "react";
-import { fetchTweets } from "../../utils/fetchTweets";
-import PageContainer from "../components/PageContainer";
-import { Tweet } from "../../typings";
+import dynamic from "next/dynamic";
+const Feed = dynamic(() => import("@components/Feed"), { ssr: false });
 
-
-
-// type SearchPageProps = {
-//   topic: string | null;
-//   searchedTweets: Tweet[];
-// };
-
-const SearchPage =  async () => {
-  const topic = 'Search Page';
-  const searchedTweets = await fetchTweets();
-  if (!searchedTweets) return <div>Loading...</div>;
-
-  
+async function SearchPage() {
 
   return (
-    <React.Suspense fallback={<h1>Loading...</h1>}>
-      <PageContainer title={`${topic ? "Trending - " + topic : "Search"}`}>
-        <div/>
-      </PageContainer>
+    <React.Suspense fallback={<div>Loading...</div>}>
+      <Feed title="Search" />
     </React.Suspense>
   );
 };

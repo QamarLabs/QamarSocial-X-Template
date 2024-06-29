@@ -1,6 +1,6 @@
 import React from "react";
 import dynamic from "next/dynamic";
-import { fetchTweets } from "../../utils/fetchTweets";
+import { fetchTweets } from "../../utils/tweets/fetchTweets";
 const Feed = dynamic(() => import("@components/Feed"), { ssr: false });
 
 async function ExplorePage() {

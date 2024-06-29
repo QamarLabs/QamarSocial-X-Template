@@ -1,6 +1,6 @@
 // pages/search.tsx
 import React, { useState } from "react";
-import { fetchTweets } from "../../utils/fetchTweets";
+import { fetchTweets } from "../../utils/tweets/fetchTweets";
 import dynamic from "next/dynamic";
 const NotificationTabs = dynamic(() => import("../components/NotificationTabs"), { ssr: false });
 

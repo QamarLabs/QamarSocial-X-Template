@@ -1,7 +1,7 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import { NextRequest, NextResponse } from "next/server";
 import { Comment, CommentBody } from "../../../typings";
-import { defineDriver, write } from "@utils/neo4j";
+import { defineDriver, write } from "@utils/neo4j/neo4j";
 
 type Data = {
   comments: Comment[];

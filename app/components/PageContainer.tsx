@@ -1,12 +1,7 @@
 "use client";
-import Head from "next/head";
 import React from "react";
-import { Toaster } from "react-hot-toast";
 import SideBar from "./SideBar";
 import Widgets from "./Widgets";
-import { motion } from "framer-motion";
-import { Tweet } from "../../typings";
-import Feed from "./Feed";
 
 type PageContainerProps = {
   title?: string;

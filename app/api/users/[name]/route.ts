@@ -1,6 +1,7 @@
 // app/api/tweets/[tweet_id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { defineDriver, read } from "@utils/neo4j";
+import { defineDriver, read } from "@utils/neo4j/neo4j";
+import { ProfileUser } from "typings";
 
 async function GET(
   request: NextRequest,
@@ -23,12 +24,14 @@ async function GET(
       session,
       `
         MATCH (user:User {username: $username})
-        RETURN user
+        OPTIONAL MATCH (user)-[:BOOKMARKED]->(bookmark:Tweet)
+        RETURN user,
+              COLLECT(DISTINCT bookmark.id) AS bookmarks
       `,
       { username },
-      "user"
+      ["user", 'bookmarks']
     );
-    const user = users && users.length ? users[0] : undefined;
+    const user: ProfileUser = users && users.length ? users[0] : undefined;
     return NextResponse.json({ user, success: true });
   } catch (err) {
     return NextResponse.json({ message: "Fetch user error!", success: false });

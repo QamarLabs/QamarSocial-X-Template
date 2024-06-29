@@ -1,12 +1,18 @@
 // app/api/tweets/[tweet_id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { defineDriver, read, write } from "../../../../utils/neo4j";
-import { Tweet } from "../../../../typings";
+import { defineDriver, read, write } from "@utils/neo4j/neo4j";
+import { TweetToDisplay } from "typings";
+
+interface GetTweetResponse {
+  tweet?: TweetToDisplay,
+  messge?: string;
+  success: boolean;
+}
 
 async function GET(
   request: NextRequest,
   { params }: { params: { tweet_id: string } }
-) {
+): Promise<NextResponse<GetTweetResponse>> {
   const { tweet_id } = params;
   const tweetId = tweet_id as string;
 
@@ -22,21 +28,31 @@ async function GET(
 
     const tweets = await read(
       session,
-      "MATCH (t:Tweet {_id: $tweetId}) RETURN t",
+      `
+        MATCH (tweet:Tweet { _id: $tweetId })
+        OPTIONAL MATCH (tweet)-[:HAS_COMMENT]->(c:Comment)<-[:COMMENTED]-(u:User)
+        OPTIONAL MATCH (tweet)<-[:RETWEETED]-(retweeter:User)
+        OPTIONAL MATCH (tweet)<-[:LIKED]-(liker:User)
+        WITH tweet,
+            COLLECT(DISTINCT c) AS comments,
+            COLLECT(DISTINCT u) AS commenters,
+            COLLECT(DISTINCT retweeter) AS retweeters,
+            COLLECT(DISTINCT liker) AS likers
+        RETURN tweet,
+              comments,
+              commenters,
+              retweeters,
+              likers
+        LIMIT 100
+      `,
       { tweetId },
-      "t"
-    );
-    const commentsForTweet = await read(
-      session,
-      "MATCH (t: Tweet {_id: $tweetId})-[:HAS_COMMENT]->(c:Comment) RETURN c LIMIT 10",
-      { tweetId },
-      "c"
+      ["tweet", "comments", "commenters", "retweeters", "likers"]
     );
     
     const tweet = tweets ? tweets[0] : undefined;
 
     if (tweet) {
-      return NextResponse.json({ tweet, comments: commentsForTweet, success: true });
+      return NextResponse.json({ tweet, success: true });
     } else {
       throw new Error(`Tweet not found based on status id ${tweetId}`);
     }

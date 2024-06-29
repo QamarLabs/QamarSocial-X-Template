@@ -1,4 +1,4 @@
-import { stopPropagationOnClick } from "@utils/index";
+import { stopPropagationOnClick } from "@utils/neo4j/index";
 
 export interface CommonLinkProps {
   animatedLink: boolean;

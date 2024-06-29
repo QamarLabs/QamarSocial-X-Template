@@ -1,5 +1,5 @@
-import { Params, retrieveQueryString } from ".";
-import { Tweet, Comment } from "../typings";
+import { Params, retrieveQueryString } from "../neo4j";
+import { TweetToDisplay, Comment } from "../../typings";
 
 export const fetchTweet = async (statusId: string) => {
   try {
@@ -10,9 +10,8 @@ export const fetchTweet = async (statusId: string) => {
     }
     
     const data = await res.json();
-    const tweet: Tweet = data.tweet;
-    const comments: Comment[] = data.comments;
-    return {tweet, comments };
+    const tweet: TweetToDisplay = data.tweet;
+    return {tweet };
   } catch(error)  {
     console.log("Error:", error);
   }

@@ -16,6 +16,10 @@ const SessionProviderWrapper = dynamic(
   () => import("./components/layout/SessionProviderWrapper"),
   { ssr: false }
 );
+const ReduxProviderWrapper = dynamic(
+  () => import("./components/layout/ReduxProviderWrapper"),
+  { ssr: false }
+);
 const LoadingSpinner = dynamic(
   () => import("./components/layout/LoadingSpinner"),
   { ssr: false }
@@ -39,21 +43,23 @@ export default async function RootLayout({
           refetchInterval={5 * 60}
           refetchWhenOffline={false}
         >
-          <ThemeProviderWrapper>
-            <Header metadata={metadata} />
+          <ReduxProviderWrapper>
+            <ThemeProviderWrapper>
+              <Header metadata={metadata} />
 
-            <div className="mx-auto max-h-screen overflow-hidden lg:max-w-6xl">
-              <main className="grid grid-cols-9">
-                <Suspense
-                  fallback={
-                    <LoadingSpinner color="text-green-500" size="w-8 h-8" />
-                  }
-                >
-                  <PageContainer>{children}</PageContainer>
-                </Suspense>
-              </main>
-            </div>
-          </ThemeProviderWrapper>
+              <div className="mx-auto max-h-screen overflow-hidden lg:max-w-6xl">
+                <main className="grid grid-cols-9">
+                  <Suspense
+                    fallback={
+                      <LoadingSpinner color="text-green-500" size="w-8 h-8" />
+                    }
+                  >
+                    <PageContainer>{children}</PageContainer>
+                  </Suspense>
+                </main>
+              </div>
+            </ThemeProviderWrapper>
+          </ReduxProviderWrapper>
         </SessionProviderWrapper>
       </body>
     </html>

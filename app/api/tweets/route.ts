@@ -1,24 +1,48 @@
 // app/api/tweets/route.ts
-import { NextResponse } from 'next/server';
-import { defineDriver, read } from '../../../utils/neo4j';
-import { Tweet, TweetBody } from '../../../typings';
+import { NextRequest, NextResponse } from 'next/server';
+import { defineDriver, read } from '@utils/neo4j/neo4j';
+import { TweetToDisplay } from '../../../typings';
 import { NextApiRequest, NextApiResponse } from 'next';
 
-export interface TweetResponse {
-  records: Tweet[];
-}
 
-async function GET() {
+async function GET(request: NextRequest) {
+  const params = new URL(request.url!).searchParams;
+  const [limit, page] = [parseInt(params.get('limit')!), parseInt(params.get('page')!)];
   const driver = defineDriver();
   const session = driver.session();
-  let tweets: Tweet[] = [];
-  
+  let tweets: TweetToDisplay[] = [];
+
   try {
-    const result = await read(session, 'MATCH (t:Tweet) RETURN t LIMIT 100', {}, "t");
+    const result = await read(
+                            session, 
+                            `
+                              MATCH (tweet:Tweet)
+                              OPTIONAL MATCH (tweet)-[:HAS_COMMENT]->(c:Comment)<-[:COMMENTED]-(u:User)
+                              OPTIONAL MATCH (tweet)<-[:RETWEETED]-(retweeter:User)
+                              OPTIONAL MATCH (tweet)<-[:LIKED]-(liker:User)
+                              WITH tweet,
+                                  COLLECT(DISTINCT c) AS comments,
+                                  COLLECT(DISTINCT u) AS commenters,
+                                  COLLECT(DISTINCT retweeter) AS retweeters,
+                                  COLLECT(DISTINCT liker) AS likers
+                              RETURN tweet,
+                                    comments,
+                                    commenters,
+                                    retweeters,
+                                    likers
+                              SKIP ${(page - 1) * limit}
+                              LIMIT ${limit}
+                            `, 
+                            {}, 
+                            ["tweet", "comments", "commenters", "retweeters", "likers"]
+                          );
+                          // console.log(page, limit);
+                          // console.log('tweets:', tweets);
     tweets = result ?? []; // Adjust based on your schema
   } finally {
     await session.close();
   }
+  // console.log('tweets:', tweets);
   return NextResponse.json({ tweets });
 }
 

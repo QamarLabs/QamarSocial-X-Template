@@ -1,4 +1,26 @@
-export interface Tweet extends TweetBody {
+export interface ReduxSearchState {
+  searchQry: string;
+  page: number;
+  limit: number;
+  searchedTweets: TweetToDisplay[];
+}
+
+export interface UserProfileTweets {
+  likedTweet: TweetToDisplay[];
+  retweetedTweets: TweetToDisplay[];
+  bookmarkedTweets: TweetToDisplay[];
+  commentedTweets: TweetToDisplay[];
+  userTweets: TweetToDisplay[];
+}
+export interface TweetToDisplay {
+  tweet: TweetRecord,
+  comments: Comment[],
+  commenters: User[],
+  retweeters: User[],
+  likers: User[]
+}
+
+export interface TweetRecord extends TweetBody {
   _id: string;
   _createdAt: string;
   _updatedAt: string;
@@ -8,12 +30,17 @@ export interface Tweet extends TweetBody {
   likes?: string[]
 }
 
+export interface ProfileUser {
+  user: User;
+  bookmarks: string[];
+}
+
 export interface User extends UserInfo {
   _id: string;
   _createdAt: string;
   _updatedAt: string;
   dateOfBirth?: string;
-  geoId?: string;
+  geoId?: string;1
   maritalStatus?: 'single' | 'married' | 'divorced' | 'widowed';
   hobbies?: string[];
   preferredMadhab?: 'Hanafi' | "Shafi'i" | 'Maliki' | 'Hanbali' | "Salafi";

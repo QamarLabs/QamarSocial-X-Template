@@ -1,7 +1,7 @@
 // pages/api/auth/[...nextauth].ts
 import { faker } from "@faker-js/faker";
-import { getEmailUsername } from "@utils/index";
-import { defineDriver, read, write } from "@utils/neo4j";
+import { getEmailUsername } from "@utils/neo4j/index";
+import { defineDriver, read, write } from "@utils/neo4j/neo4j";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 

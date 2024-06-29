@@ -1,6 +1,6 @@
 "use client";
 import { faker } from "@faker-js/faker";
-import { HeartIcon, UploadIcon } from "@heroicons/react/outline";
+import { BookmarkIcon, HeartIcon, UploadIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
@@ -9,26 +9,30 @@ import toast from "react-hot-toast";
 import TimeAgo from "react-timeago";
 
 // import { auth } from "../firebase/firebase";
-import { Comment, CommentBody, Tweet } from "../../typings";
-import { fetchComments } from "../../utils/fetchComments";
-import { stopPropagationOnClick } from "@utils/index";
-import { likedTweet } from "@utils/likedTweet";
+import { Comment, TweetToDisplay } from "../../typings";
+import { fetchComments } from "@utils/tweets/fetchComments";
+import { stopPropagationOnClick } from "@utils/neo4j/index";
+import { likeTweet } from "@utils/update-tweets/likeTweet";
+import { retweet } from "@utils/update-tweets/retweet";
+import { bookmarkTweet } from "@utils/user/bookmarkTweet";
 
 interface Props {
-  tweet:Tweet;
+  tweet:TweetToDisplay;
   comments?: Comment[];
-  userId: string;
+  userId: string | undefined;
+  bookmarks?: string[];
   pushNote: boolean;
 }
 
-function TweetComponent({ tweet, comments, userId, pushNote }: Props) {
+function TweetComponent({ tweet, comments, userId, pushNote, bookmarks }: Props) {
   // const [user] = useAuthState(auth);
   const router = useRouter();
   const [currentComments, setCurrentComments] = useState<Comment[]>(comments ?? []);
   const [input, setInput] = useState<string>("");
   const [commentBoxOpen, setCommentBoxOpen] = useState<boolean>(false);
+  const tweetInfo = tweet.tweet;
   const refreshComments = async () => {
-    const comments: Comment[] = await fetchComments(tweet._id);
+    const comments: Comment[] = await fetchComments(tweetInfo._id);
     setCurrentComments(comments);
   };
 
@@ -82,7 +86,7 @@ function TweetComponent({ tweet, comments, userId, pushNote }: Props) {
   };
 
   const navigateToTweet = () => {
-    router.push(`status/${tweet._id}`);
+    router.push(`status/${tweetInfo._id}`);
   };
 
   // useEffect(() => {
@@ -95,11 +99,22 @@ function TweetComponent({ tweet, comments, userId, pushNote }: Props) {
   /*   const handleSignIn = async () => {
     router.push("/auth/signin");
   }; */
-  const onLikedTweet = async () => {
-    const isLikedAlready =
-      tweet.likes && tweet.likes.includes(userId) ? true : false;
-    await likedTweet(tweet._id, userId, isLikedAlready);
+  const onLikeTweet = async () => {
+    const isLikedAlready = tweet.likers.some(l => l._id === userId);
+    await likeTweet(tweet.tweet._id, userId!, isLikedAlready);
   };
+
+  const onRetweet = async () => {
+    const isRetweeted = tweet.retweeters.some(l => l._id === userId);
+    await retweet(tweet.tweet._id, userId!, isRetweeted);
+  };
+
+  const commentOnTweet = () => {};
+
+  const onBookmarkTweet = async () => {
+    const isBookmarked = bookmarks?.some(bk => tweet.tweet._id === bk);
+    await bookmarkTweet(tweet.tweet._id, userId!, isBookmarked ?? false);
+  }
 
   return (
     <div
@@ -109,16 +124,16 @@ function TweetComponent({ tweet, comments, userId, pushNote }: Props) {
       <div className="flex space-x-3 cursor-pointer">
         <img
           className="h-10 w-10 rounded-full object-cover "
-          src={tweet.profileImg}
-          alt={tweet.username}
+          src={tweetInfo.profileImg}
+          alt={tweetInfo.username}
           onClick={handleNavigatePage}
         />
         <div>
           <div className="flex item-center space-x-1">
             <p className={`font-bold mr-1`} onClick={handleNavigatePage}>
-              {tweet.username}
+              {tweetInfo.username}
             </p>
-            {userId === tweet.username && (
+            {userId === tweetInfo.username && (
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -136,17 +151,17 @@ function TweetComponent({ tweet, comments, userId, pushNote }: Props) {
               className="hidden text-sm text-gray-500 sm:inline dark:text-gray-400"
               onClick={handleNavigatePage}
             >
-              @{tweet.username ? tweet.username.replace(/\s+/g, "") : ""}.
+              @{tweetInfo.username ? tweetInfo.username.replace(/\s+/g, "") : ""}.
             </p>
             <TimeAgo
               className="text-sm text-gray-500 dark:text-gray-400"
-              date={tweet._createdAt}
+              date={tweetInfo._createdAt}
             />
           </div>
-          <p className="pt-1">{tweet.text}</p>
-          {tweet.image && (
+          <p className="pt-1">{tweetInfo.text}</p>
+          {tweetInfo.image && (
             <img
-              src={tweet.image}
+              src={tweetInfo.image}
               alt="img/tweet"
               className="m-5 ml-0 max-h-60
           rounded-lg object-cover shadow-sm"
@@ -161,7 +176,7 @@ function TweetComponent({ tweet, comments, userId, pushNote }: Props) {
           onClick={(e) =>
             stopPropagationOnClick(e, () => setCommentBoxOpen(!commentBoxOpen))
           }
-          className="flex cursor-pointer item-center space-x-3 text-gray-400"
+          className="flex cursor-pointer item-center space-x-3 text-gray-400 hover:text-twitter"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -178,12 +193,13 @@ function TweetComponent({ tweet, comments, userId, pushNote }: Props) {
             />
           </svg>
 
-          <p className="text-center">{currentComments.length}</p>
+          <p className="text-center">{tweet.comments?.length ?? 0}</p>
         </motion.div>
         <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="flex cursor-pointer item-center space-x-3 text-gray-400"
+          className="flex cursor-pointer item-center space-x-3 text-gray-400 hover:text-retweet"
+          onClick={(e) => stopPropagationOnClick(e, onRetweet)}
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -201,29 +217,40 @@ function TweetComponent({ tweet, comments, userId, pushNote }: Props) {
           </svg>
 
           <p className="text-center">
-            {faker.datatype.number({ min: 10, max: 500 })}
+            {tweet.retweeters?.length ?? 0}
           </p>
         </motion.div>
         <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="flex cursor-pointer item-center space-x-3 text-gray-400"
+          className="flex cursor-pointer item-center space-x-3 text-gray-400 hover:text-liked"
+          onClick={(e) => stopPropagationOnClick(e, onLikeTweet)}
         >
           <HeartIcon
-            onClick={(e) => stopPropagationOnClick(e, onLikedTweet)}
             className="h-5 w-5"
           />
           <p className="text-center">
-            {faker.datatype.number({ min: 10, max: 500 })}
+          {tweet.likers?.length ?? 0}
           </p>
         </motion.div>
-        <motion.div
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          className="flex cursor-pointer item-center space-x-3 text-gray-400"
-        >
-          <UploadIcon className="h-5 w-5" />
-        </motion.div>
+        <div className="flex gap-2">
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="flex cursor-pointer item-center space-x-3 text-gray-400 hover:text-twitter"
+            onClick={(e) => stopPropagationOnClick(e, onBookmarkTweet)}
+          >
+            <BookmarkIcon className="h-5 w-5" />
+          </motion.div>
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            className="flex cursor-pointer item-center space-x-3 text-gray-400"
+          >
+            <UploadIcon className="h-5 w-5" />
+          </motion.div>
+        
+        </div>
       </div>
 
       {commentBoxOpen && (

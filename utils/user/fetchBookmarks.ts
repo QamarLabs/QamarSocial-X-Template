@@ -1,4 +1,4 @@
-import { Tweet } from "../typings";
+import { TweetToDisplay } from "../../typings";
 
 export interface Params {
   query: string

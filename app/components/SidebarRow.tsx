@@ -1,7 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import React, { SVGProps } from "react";
-import { nonRoutableTitles } from "@utils/index";
+import { nonRoutableTitles } from "@utils/neo4j/index";
 import { signOut } from "next-auth/react";
 import { CommonLink, CommonLinkProps } from "./common/Links";
 

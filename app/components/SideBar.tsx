@@ -21,7 +21,7 @@ import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Modal from "./Modal";
 import Image from "next/image";
-import { stopPropagationOnClick } from "@utils/index";
+import { stopPropagationOnClick } from "@utils/neo4j/index";
 import { User } from "typings";
 
 type SideBarProps = {

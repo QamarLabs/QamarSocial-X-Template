@@ -1,4 +1,4 @@
-import { defineDriver, read } from "@utils/neo4j";
+import { defineDriver, read } from "@utils/neo4j/neo4j";
 import { NextRequest, NextResponse } from "next/server";
 
 async function GET(

@@ -1,43 +1,55 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { faker } from "@faker-js/faker";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { retrieveQueryString, stopPropagationOnClick } from "@utils/neo4j/index";
 
 function Widgets() {
   const [country, setCountry] = useState<string>("");
   const pathname = usePathname();
-
+  const router = useRouter();
   useEffect(() => {
     const mockCountryData = faker.address.country();
     setCountry(mockCountryData);
   }, []);
 
+  const onSearch = () => {
+    const qryString = retrieveQueryString({ search_term: "Test" });
+    router.push(`/search${qryString}`);
+  };
+
   return (
     <div className="col-span-2 sm:col-span-1 min-w-[100px] max-w-[250px] hidden lg:inline-block">
       <div className="overflow-y-auto fixed h-screen scrollbar-hide">
-        {pathname != "/explore" && (
-          <div className="relative text-gray-800 w-80 p-5 dark:text-gray-500">
-            <button type="submit" className="absolute ml-4 mt-3 mr-4">
-              {/* <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="w-5 h-5 items-center"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-                  />
-                </svg> */}
-            </button>
+        {pathname != "/explore" && pathname != "/search" && (
+          <div className="relative text-gray-800 w-80 p-5 dark:text-gray-500 flex">
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              className="flex cursor-pointer item-center space-x-3 text-gray-400 hover:text-twitter p-2"
+              onClick={(e) => stopPropagationOnClick(e, onSearch)}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="w-5 h-5 items-center"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                />
+              </svg>
+            </motion.div>
 
             <input
               type="search"
               name="search"
-              placeholder="Search Twitter"
+              placeholder="Search Qamar Social"
               className="bg-dim-700 h-10 px-10 pr-5 w-full rounded-full text-sm focus:outline-none bg-purple-white shadow border-0 dark:bg-gray-800 dark:text-gray-200"
             />
           </div>

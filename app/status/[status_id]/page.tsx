@@ -3,7 +3,7 @@ import React, { Suspense, useState } from "react";
 const TweetComponent = dynamic(() => import("../../components/Tweet"), {
   ssr: false,
 });
-import { fetchTweet } from "@utils/fetchTweet";
+import { fetchTweet } from "@utils/tweets/fetchTweet";
 import { getServerSession } from "next-auth";
 
 interface StatusPageProps {
@@ -37,8 +37,7 @@ const StatusPage = async ({ params }: StatusPageProps) => {
         {/* <p>{JSON.stringify(tweet)}</p> */}
         <Suspense fallback={<h4 className="text-body">Loading...</h4>}>
           <TweetComponent
-            tweet={tweetData.tweet}
-            comments={tweetData.comments}
+            tweet={tweetData.tweet ?? {}}
             pushNote={true}
             userId={user ? (user as any)["_id"] : ""}
           />

@@ -1,6 +1,6 @@
 import React from "react";
 import dynamic from "next/dynamic";
-import { fetchTweets } from "../../utils/fetchTweets";
+import { fetchTweets } from "../../utils/tweets/fetchTweets";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 const Feed = dynamic(() => import("@components/Feed"), { ssr: false });

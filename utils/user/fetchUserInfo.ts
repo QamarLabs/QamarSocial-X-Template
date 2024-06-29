@@ -1,4 +1,4 @@
-import { Tweet, User } from "../typings";
+import {  ProfileUser } from "../../typings";
 
 export const fetchUserInfo = async (name: string) => {
   try {
@@ -9,7 +9,7 @@ export const fetchUserInfo = async (name: string) => {
     }
     
     const data = await res.json();
-    const user: User = data.user;
+    const user: ProfileUser = data.user;
     return user;
   } catch(error)  {
     console.log("Error:", error);

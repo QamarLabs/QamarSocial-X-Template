@@ -1,5 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import { defineDriver, write } from "../../../../utils/neo4j";
+import { defineDriver, write } from "@utils/neo4j/neo4j";
 import { NextRequest, NextResponse } from "next/server";
 
 type Data = {
