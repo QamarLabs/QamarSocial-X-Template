@@ -5,8 +5,12 @@ import { defineDriver, read, write } from "@utils/neo4j/neo4j";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-const reusableEmailQuery = "MATCH (u:User {username: $username}) RETURN u";
-
+const reusableEmailQuery = `
+    MATCH (user:User {email: $email})
+    OPTIONAL MATCH (user)-[:BOOKMARKED]->(bookmark:Tweet)
+    RETURN user,
+          COLLECT(bookmark) AS bookmarks
+`;
 
 const authOptions: NextAuthOptions = {
   session: {
@@ -25,13 +29,24 @@ const authOptions: NextAuthOptions = {
     async session({ session, token, user }) {
       const driver = defineDriver();
       const dSession = driver.session();
-      if(session.user) {
-        const loginUserInfo = await read(dSession, reusableEmailQuery, {
-          username: session?.user ? getEmailUsername(session.user.email!) : "",
-        });
-        const loggedInUser = loginUserInfo?.length ? loginUserInfo[0] : {};
-        session.user = { ...session.user, ...loggedInUser };
+      if (session && session.user) {
+        const usersInDb = await read(
+          dSession,
+          reusableEmailQuery,
+          {
+            email: session.user.email,
+          },
+          ["user", "bookmarks"]
+        );
+        const userInDb = usersInDb && usersInDb.length ? usersInDb[0] : {};
+        session.user = {
+          ...session.user,
+          ...userInDb.user,
+          bookmarks: Array.from(new Set(userInDb.bookmarks.map((bk: any) => bk._id)))
+        };
+        
       }
+      
       return session;
     },
     async signIn({ account, profile }) {
@@ -45,10 +60,14 @@ const authOptions: NextAuthOptions = {
       try {
         const driver = defineDriver();
         const dSession = driver.session();
-        const username = getEmailUsername(profile.email);
-        const user = await read(dSession, reusableEmailQuery, {
-          username: username,
-        });
+        const user = await read(
+          dSession,
+          reusableEmailQuery,
+          {
+            email: profile.email,
+          },
+          ["user", "bookmarks"]
+        );
         // console.log("Neo4j User:", user);
         if (!user?.length)
           await write(
@@ -79,7 +98,7 @@ const authOptions: NextAuthOptions = {
               _id: faker.datatype.uuid(),
               _createdAt: new Date().toUTCString(),
               _updatedAt: null,
-              username: username,
+              username: getEmailUsername(profile.email),
               email: profile.email,
               countryOfOrigin: null,
               phone: null,

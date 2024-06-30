@@ -40,6 +40,7 @@ function Feed({ title, searchServer, hideTweetBox }: Props) {
             tweet={tweet}
             pushNote={true}
             userId={user ? (user as any)["_id"] : ""}
+            bookmarks={user ? (user as any)["bookmarks"] : ""}
           />
         ))}
       </div>

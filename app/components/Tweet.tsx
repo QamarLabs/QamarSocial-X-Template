@@ -3,7 +3,10 @@ import { faker } from "@faker-js/faker";
 import { BookmarkIcon, HeartIcon, UploadIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, {
+  useLayoutEffect,
+  useState,
+} from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import toast from "react-hot-toast";
 import TimeAgo from "react-timeago";
@@ -17,28 +20,38 @@ import { retweet } from "@utils/update-tweets/retweet";
 import { bookmarkTweet } from "@utils/user/bookmarkTweet";
 
 interface Props {
-  tweet:TweetToDisplay;
+  tweet: TweetToDisplay;
   comments?: Comment[];
   userId: string | undefined;
   bookmarks?: string[];
   pushNote: boolean;
 }
 
-function TweetComponent({ tweet, comments, userId, pushNote, bookmarks }: Props) {
-  // const [user] = useAuthState(auth);
+function TweetComponent({
+  tweet,
+  comments,
+  userId,
+  pushNote,
+  bookmarks,
+}: Props) {
   const router = useRouter();
-  const [currentComments, setCurrentComments] = useState<Comment[]>(comments ?? []);
+  const [currentComments, setCurrentComments] = useState<Comment[]>(
+    comments ?? []
+  );
   const [input, setInput] = useState<string>("");
   const [commentBoxOpen, setCommentBoxOpen] = useState<boolean>(false);
+  const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
+  // const isBookmarkedRef = useRef<boolean>(bookmarks?.some(bk => bk === tweet.tweet._id) ?? false);
+
   const tweetInfo = tweet.tweet;
   const refreshComments = async () => {
     const comments: Comment[] = await fetchComments(tweetInfo._id);
     setCurrentComments(comments);
   };
 
-  // useEffect(() => {
-  //   refreshComments();
-  // }, []);
+  useLayoutEffect(() => {
+    setIsBookmarked(bookmarks?.some((bk) => bk === tweet.tweet._id) ?? false);
+  }, []);
 
   const handleSubmit = async (
     e: React.MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
@@ -47,20 +60,6 @@ function TweetComponent({ tweet, comments, userId, pushNote, bookmarks }: Props)
 
     const commentToast = toast.loading("Posting Comment...");
 
-    // Comment logic
-    // const comment: CommentBody = {
-    //   comment: input,
-    //   tweetId: tweet._id,
-    //   username: user?.displayName!,
-    //   profileImg: user?.photoURL!,
-    // };
-
-    // const result = await fetch(`/api/addComment`, {
-    //   body: JSON.stringify(comment),
-    //   method: "POST",
-    // });
-
-    // console.log("we made it", result);
     toast.success("Comment Posted!", {
       id: commentToast,
     });
@@ -70,51 +69,30 @@ function TweetComponent({ tweet, comments, userId, pushNote, bookmarks }: Props)
     refreshComments();
   };
 
-  const handleNavigatePage = () => {
-    // if (user) {
-    //   if (pushNote) {
-    //     router.push({
-    //       pathname: `user/${tweet.username}`,
-    //       query: {
-    //         userName: tweet.username.toString(),
-    //       },
-    //     });
-    //   } else return;
-    // } else {
-    //   router.push("auth/signin");
-    // }
+  const navigateToTweetUser = () => {
+    router.push(`users/${tweetInfo.username}`);
   };
 
   const navigateToTweet = () => {
     router.push(`status/${tweetInfo._id}`);
   };
 
-  // useEffect(() => {
-  //   if (userName === tweet.username) {
-  //     setUserPName(tweet.username);
-  //     setUserPhotoUrl(tweet.profileImg);
-  //   } else return;
-  // }, [tweet]);
-
-  /*   const handleSignIn = async () => {
-    router.push("/auth/signin");
-  }; */
   const onLikeTweet = async () => {
-    const isLikedAlready = tweet.likers.some(l => l._id === userId);
+    const isLikedAlready = tweet.likers.some((l) => l._id === userId);
     await likeTweet(tweet.tweet._id, userId!, isLikedAlready);
   };
 
   const onRetweet = async () => {
-    const isRetweeted = tweet.retweeters.some(l => l._id === userId);
+    const isRetweeted = tweet.retweeters.some((l) => l._id === userId);
     await retweet(tweet.tweet._id, userId!, isRetweeted);
   };
 
   const commentOnTweet = () => {};
 
   const onBookmarkTweet = async () => {
-    const isBookmarked = bookmarks?.some(bk => tweet.tweet._id === bk);
-    await bookmarkTweet(tweet.tweet._id, userId!, isBookmarked ?? false);
-  }
+    await bookmarkTweet(tweet.tweet._id, userId!, isBookmarked);
+    setIsBookmarked(!isBookmarked);
+  };
 
   return (
     <div
@@ -126,11 +104,11 @@ function TweetComponent({ tweet, comments, userId, pushNote, bookmarks }: Props)
           className="h-10 w-10 rounded-full object-cover "
           src={tweetInfo.profileImg}
           alt={tweetInfo.username}
-          onClick={handleNavigatePage}
+          onClick={(e) => stopPropagationOnClick(e, navigateToTweetUser)}
         />
         <div>
           <div className="flex item-center space-x-1">
-            <p className={`font-bold mr-1`} onClick={handleNavigatePage}>
+            <p className={`font-bold mr-1 hover:underline`} onClick={(e) => stopPropagationOnClick(e, navigateToTweetUser)}>
               {tweetInfo.username}
             </p>
             {userId === tweetInfo.username && (
@@ -148,10 +126,12 @@ function TweetComponent({ tweet, comments, userId, pushNote, bookmarks }: Props)
               </svg>
             )}
             <p
-              className="hidden text-sm text-gray-500 sm:inline dark:text-gray-400"
-              onClick={handleNavigatePage}
+              className="hidden text-sm text-gray-500 sm:inline dark:text-gray-400 hover:underline"
+              onClick={(e) => stopPropagationOnClick(e, navigateToTweetUser)}
             >
-              @{tweetInfo.username ? tweetInfo.username.replace(/\s+/g, "") : ""}.
+              @
+              {tweetInfo.username ? tweetInfo.username.replace(/\s+/g, "") : ""}
+              .
             </p>
             <TimeAgo
               className="text-sm text-gray-500 dark:text-gray-400"
@@ -216,9 +196,7 @@ function TweetComponent({ tweet, comments, userId, pushNote, bookmarks }: Props)
             />
           </svg>
 
-          <p className="text-center">
-            {tweet.retweeters?.length ?? 0}
-          </p>
+          <p className="text-center">{tweet.retweeters?.length ?? 0}</p>
         </motion.div>
         <motion.div
           whileHover={{ scale: 1.1 }}
@@ -226,18 +204,18 @@ function TweetComponent({ tweet, comments, userId, pushNote, bookmarks }: Props)
           className="flex cursor-pointer item-center space-x-3 text-gray-400 hover:text-liked"
           onClick={(e) => stopPropagationOnClick(e, onLikeTweet)}
         >
-          <HeartIcon
-            className="h-5 w-5"
-          />
-          <p className="text-center">
-          {tweet.likers?.length ?? 0}
-          </p>
+          <HeartIcon className="h-5 w-5" />
+          <p className="text-center">{tweet.likers?.length ?? 0}</p>
         </motion.div>
         <div className="flex gap-2">
           <motion.div
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
-            className="flex cursor-pointer item-center space-x-3 text-gray-400 hover:text-twitter"
+            className={`
+              flex cursor-pointer item-center space-x-3 ${
+                isBookmarked ? "text-twitter" : "text-gray-400"
+              } hover:text-twitter
+            `}
             onClick={(e) => stopPropagationOnClick(e, onBookmarkTweet)}
           >
             <BookmarkIcon className="h-5 w-5" />
