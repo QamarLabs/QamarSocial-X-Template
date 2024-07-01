@@ -3,10 +3,7 @@ import { faker } from "@faker-js/faker";
 import { BookmarkIcon, HeartIcon, UploadIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import React, {
-  useLayoutEffect,
-  useState,
-} from "react";
+import React, { useLayoutEffect, useState } from "react";
 import { useAuthState } from "react-firebase-hooks/auth";
 import toast from "react-hot-toast";
 import TimeAgo from "react-timeago";
@@ -24,6 +21,8 @@ interface Props {
   comments?: Comment[];
   userId: string | undefined;
   bookmarks?: string[];
+  retweets?: string[];
+  likedTweets?: string[];
   pushNote: boolean;
 }
 
@@ -33,6 +32,8 @@ function TweetComponent({
   userId,
   pushNote,
   bookmarks,
+  retweets,
+  likedTweets,
 }: Props) {
   const router = useRouter();
   const [currentComments, setCurrentComments] = useState<Comment[]>(
@@ -41,6 +42,9 @@ function TweetComponent({
   const [input, setInput] = useState<string>("");
   const [commentBoxOpen, setCommentBoxOpen] = useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
+  const [isRetweeted, setIsRetweeted] = useState<boolean>(false);
+  const [isLiked, setIsLiked] = useState<boolean>(false);
+
   // const isBookmarkedRef = useRef<boolean>(bookmarks?.some(bk => bk === tweet.tweet._id) ?? false);
 
   const tweetInfo = tweet.tweet;
@@ -50,7 +54,17 @@ function TweetComponent({
   };
 
   useLayoutEffect(() => {
-    setIsBookmarked(bookmarks?.some((bk) => bk === tweet.tweet._id) ?? false);
+    //If any of the bookmarks are not undefined, that means
+    if (userId) {
+      setIsBookmarked(bookmarks?.some((bk) => bk === tweet.tweet._id) ?? false);
+      setIsRetweeted(
+        retweets?.some((retweet) => retweet === tweet.tweet._id) ?? false
+      );
+      setIsLiked(
+        likedTweets?.some((likedTweet) => likedTweet === tweet.tweet._id) ??
+          false
+      );
+    }
   }, []);
 
   const handleSubmit = async (
@@ -78,13 +92,13 @@ function TweetComponent({
   };
 
   const onLikeTweet = async () => {
-    const isLikedAlready = tweet.likers.some((l) => l._id === userId);
-    await likeTweet(tweet.tweet._id, userId!, isLikedAlready);
+    await likeTweet(tweet.tweet._id, userId!, isLiked);
+    setIsLiked(!isLiked);
   };
 
   const onRetweet = async () => {
-    const isRetweeted = tweet.retweeters.some((l) => l._id === userId);
     await retweet(tweet.tweet._id, userId!, isRetweeted);
+    setIsRetweeted(!isRetweeted);
   };
 
   const commentOnTweet = () => {};
@@ -108,7 +122,10 @@ function TweetComponent({
         />
         <div>
           <div className="flex item-center space-x-1">
-            <p className={`font-bold mr-1 hover:underline`} onClick={(e) => stopPropagationOnClick(e, navigateToTweetUser)}>
+            <p
+              className={`font-bold mr-1 hover:underline`}
+              onClick={(e) => stopPropagationOnClick(e, navigateToTweetUser)}
+            >
               {tweetInfo.username}
             </p>
             {userId === tweetInfo.username && (
@@ -178,7 +195,11 @@ function TweetComponent({
         <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="flex cursor-pointer item-center space-x-3 text-gray-400 hover:text-retweet"
+          className={`
+            flex cursor-pointer item-center space-x-3 ${
+              isRetweeted ? "text-retweet" : "text-gray-400"
+            } hover:text-retweet
+            `}
           onClick={(e) => stopPropagationOnClick(e, onRetweet)}
         >
           <svg
@@ -201,7 +222,9 @@ function TweetComponent({
         <motion.div
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
-          className="flex cursor-pointer item-center space-x-3 text-gray-400 hover:text-liked"
+          className={`flex cursor-pointer item-center space-x-3 ${
+            isLiked ? "text-liked" : "text-gray-400"
+          } hover:text-liked`}
           onClick={(e) => stopPropagationOnClick(e, onLikeTweet)}
         >
           <HeartIcon className="h-5 w-5" />
@@ -227,7 +250,6 @@ function TweetComponent({
           >
             <UploadIcon className="h-5 w-5" />
           </motion.div>
-        
         </div>
       </div>
 

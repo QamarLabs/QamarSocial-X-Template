@@ -1,8 +1,24 @@
-export interface ReduxSearchState {
+interface CommonReduxTweetsState {
   searchQry: string;
   page: number;
   limit: number;
+}
+
+export enum TypeOfFeed {
+  Feed = "feed",
+  Explore = "explore",
+  Search = "search"
+}
+
+export interface ReduxSearchState extends CommonReduxTweetsState {
   searchedTweets: TweetToDisplay[];
+}
+export interface ReduxFeedState extends CommonReduxTweetsState {
+  feedTweets: TweetToDisplay[];
+}
+export interface ReduxExploreState extends CommonReduxTweetsState {
+  topicToExplore: string;
+  exploreTweets: TweetToDisplay[];
 }
 
 export interface UserProfileTweets {

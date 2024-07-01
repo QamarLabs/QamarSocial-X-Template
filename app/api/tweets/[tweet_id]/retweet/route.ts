@@ -28,8 +28,10 @@ async function PATCH(
           // Match the tweet node
           MERGE (t:Tweet {_id: $tweetId})
           // Create the 'BOOKMARKED' relationship with a timestamp
-          MERGE (u)-[r:RETWEETED]->(t)
-          ON CREATE SET r.timestamp = timestamp()
+          MERGE (u)-[ur:RETWEETED]->(t)
+          MERGE (t)-[tr:RETWEETS]->(u)
+          ON CREATE SET ur.timestamp = timestamp()
+          ON CREATE SET tr.timestamp = timestamp()
         `,
         { userId: body["userId"], tweetId: tweet_id }
       );
@@ -39,6 +41,8 @@ async function PATCH(
         `
           MATCH (u:User {_id: $userId})-[:RETWEETED]->(t:Tweet {_id: $tweetId})
           DELETE (u)-[:RETWEETED]->(t)
+          MATCH (u:Tweet {_id: $tweetId})-[:RETWEETS]->(u:User {_id: $userId})
+          DELETE (t)-[:RETWEETS]->(u)
         `,
         { userId: body["userId"], tweetId: tweet_id }
       );

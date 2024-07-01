@@ -15,7 +15,7 @@ function useGetTweets(useRedux: boolean) {
   const { searchQry, page, limit, searchedTweets } = useSelector(
     (store: RootState) => store.search
   );
-  // const [tweets, setTweets] = useState<TweetToDisplay[]>([]);
+  // const [feedtweets, setTweets] = useState<TweetToDisplay[]>([]);
   // const [searchParams, setSearchParams] = useState<Params>(defaultSearchParams);
 
   async function setSParamsAndGetTwts() {

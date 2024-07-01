@@ -18,8 +18,8 @@ async function GET(request: NextRequest) {
                             `
                               MATCH (tweet:Tweet)
                               OPTIONAL MATCH (tweet)-[:HAS_COMMENT]->(c:Comment)<-[:COMMENTED]-(u:User)
-                              OPTIONAL MATCH (tweet)<-[:RETWEETED]-(retweeter:User)
-                              OPTIONAL MATCH (tweet)<-[:LIKED]-(liker:User)
+                              OPTIONAL MATCH (tweet)-[:RETWEETS]->(retweeter:User)
+                              OPTIONAL MATCH (tweet)-[:LIKED]->(liker:User)
                               WITH tweet,
                                   COLLECT(DISTINCT c) AS comments,
                                   COLLECT(DISTINCT u) AS commenters,

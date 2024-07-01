@@ -9,18 +9,34 @@ import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import TweetBox from "./TweetBox";
 import useGetTweets from "hooks/useGetTweets";
+import { useSelector } from "react-redux";
+import { RootState } from "@localredux/store";
 
 interface Props {
   title: string;
-  tweets?: TweetToDisplay[];
   searchServer?: boolean;
   hideTweetBox?: boolean;
+  tweets?: TweetToDisplay[];
 }
 
 function Feed({ title, searchServer, hideTweetBox }: Props) {
   const { data: session } = useSession();
   const { user } = session ?? {};
+  // let feedKey = "";
+  // let stateKey = "";
+  // if(type === TypeOfFeed.Explore) {
+  //   stateKey = "explore";
+  //   feedKey = 'exploreTweets';
+  // } else if (type === TypeOfFeed.Search) {
+  //   stateKey = "search";
+  //   feedKey = 'searchTweets';
+  // } else {
+  //   stateKey = "feed";
+  //   feedKey = 'feedTweets';
+  // }
+  // const stateStore = useSelector((store: RootState) => store[stateKey as keyof RootState])
   const { searchParams, setSearchParams, tweets, setTweets } = useGetTweets(searchServer ?? false);
+  // alert(JSON.stringify(tweets));
   return (
     <div className="col-span-7 scrollbar-hide border-x max-h-screen overflow-scroll lg:col-span-5 dark:border-gray-800">
       <div>
@@ -41,6 +57,8 @@ function Feed({ title, searchServer, hideTweetBox }: Props) {
             pushNote={true}
             userId={user ? (user as any)["_id"] : ""}
             bookmarks={user ? (user as any)["bookmarks"] : ""}
+            retweets={user ? (user as any)["retweets"] : ""}
+            likedTweets={user ? (user as any)["likedTweets"] : ""}
           />
         ))}
       </div>

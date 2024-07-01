@@ -25,12 +25,14 @@ async function PATCH(
           session,
           `
           // Match the user node
-          MERGE (u:User {id: $userId})
+          MERGE (u:User {_id: $userId})
           // Match the tweet node
-          MERGE (t:Tweet {id: $tweetId})
+          MERGE (t:Tweet {_id: $tweetId})
           // Create the 'LIKES' relationship with a timestamp
-          MERGE (u)-[r:LIKES]->(t)
-          ON CREATE SET r.timestamp = timestamp()
+          MERGE (u)-[ur:LIKES]->(t)
+          MERGE (t)-[tr:LIKED]->(u)
+          ON CREATE SET ur.timestamp = timestamp()
+          ON CREATE SET tr.timestamp = timestamp()
           `,
           { userId: body["userId"], tweetId: tweet_id }
         );
@@ -39,9 +41,12 @@ async function PATCH(
           session,
           `
           // Match the user, tweet, and the 'LIKES' relationship
-          MATCH (u:User {id: $userId})-[r:LIKES]->(t:Tweet {id: $tweetId})
+          MATCH (u:User {_id: $userId})-[r:LIKES]->(t:Tweet {_id: $tweetId})
           // Delete the 'LIKES' relationship
           DELETE r
+          MATCH (u:Tweet {_id: $tweetId})-[tr:LIKED]->(t:User {_id: $userId})
+          // Delete the 'LIKED' relationship
+          DELETE tr
           `,
           { userId: body["userId"], tweetId: tweet_id }
         );

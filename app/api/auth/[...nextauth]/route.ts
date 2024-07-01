@@ -5,12 +5,17 @@ import { defineDriver, read, write } from "@utils/neo4j/neo4j";
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-const reusableEmailQuery = `
+const sessionQuery = `
     MATCH (user:User {email: $email})
     OPTIONAL MATCH (user)-[:BOOKMARKED]->(bookmark:Tweet)
+    OPTIONAL MATCH (user)-[:RETWEETED]->(retweet:Tweet)
+    OPTIONAL MATCH (user)-[:LIKES]->(likedTweet:Tweet)
     RETURN user,
-          COLLECT(bookmark) AS bookmarks
+          COLLECT(bookmark) AS bookmarks,
+          COLLECT(retweet) AS retweets,
+          COLLECT(likedTweet) AS likedTweets
 `;
+const checkUserQuery = `MATCH (user:User {email: $email}) return user`;
 
 const authOptions: NextAuthOptions = {
   session: {
@@ -32,19 +37,21 @@ const authOptions: NextAuthOptions = {
       if (session && session.user) {
         const usersInDb = await read(
           dSession,
-          reusableEmailQuery,
+          sessionQuery,
           {
             email: session.user.email,
           },
-          ["user", "bookmarks"]
+          ["user", "bookmarks", "retweets", "likedTweets"]
         );
         const userInDb = usersInDb && usersInDb.length ? usersInDb[0] : {};
         session.user = {
           ...session.user,
           ...userInDb.user,
-          bookmarks: Array.from(new Set(userInDb.bookmarks.map((bk: any) => bk._id)))
+          bookmarks: Array.from(new Set(userInDb.bookmarks.map((bk: any) => bk._id))),
+          retweets: Array.from(new Set(userInDb.retweets.map((retweet: any) => retweet._id))),
+          likedTweets: Array.from(new Set(userInDb.likedTweets.map((likedTweet: any) => likedTweet._id))),
         };
-        
+
       }
       
       return session;
@@ -62,11 +69,11 @@ const authOptions: NextAuthOptions = {
         const dSession = driver.session();
         const user = await read(
           dSession,
-          reusableEmailQuery,
+          checkUserQuery,
           {
             email: profile.email,
           },
-          ["user", "bookmarks"]
+          "user"
         );
         // console.log("Neo4j User:", user);
         if (!user?.length)
