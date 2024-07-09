@@ -3,11 +3,15 @@ import searchSlice, { setSearchedTweets } from './slices/search';
 import feedSlice, { setFeedTweets } from './slices/feed';
 import exploreSlice, { setExploreTweets } from './slices/explore';
 import { fetchTweets } from '@utils/tweets/fetchTweets';
+import modalsSlice from './slices/modals';
 
 const createStore = (preloadedState = {}) => {
   return configureStore({
     reducer: {
-      search: searchSlice
+      search: searchSlice,
+      feed: feedSlice,
+      explore: exploreSlice,
+      modals: modalsSlice,
     },
     preloadedState
   });
@@ -19,7 +23,8 @@ const store = configureStore({
   reducer: {
     search: searchSlice,
     feed: feedSlice,
-    explore: exploreSlice
+    explore: exploreSlice,
+    modals: modalsSlice,
   },
   middleware: (getDefaultMiddleware) =>  getDefaultMiddleware().prepend(listenerMiddleware.middleware)
 });

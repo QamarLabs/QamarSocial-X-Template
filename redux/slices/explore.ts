@@ -28,10 +28,10 @@ export const exploreSlice = createSlice({
     setExploreTweets: (state, { payload:newExploreTweets }: PayloadAction<TweetToDisplay[]>) => {
       state.exploreTweets = newExploreTweets;
     },
-    resetSearchState: () => initialState
+    resetExploreState: () => initialState
   },
 });
 
-export const { setNewPage, setSearchParams, setSearchQry, setExploreTweets, resetSearchState } = exploreSlice.actions;
+export const { setNewPage, setSearchParams, setSearchQry, setExploreTweets, resetExploreState } = exploreSlice.actions;
 
 export default exploreSlice.reducer;

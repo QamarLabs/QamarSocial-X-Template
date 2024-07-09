@@ -4,7 +4,9 @@ import dynamic from "next/dynamic";
 const MainProfile = dynamic(() => import('@components/userProfile/MainProfile'), { ssr: false });
 
 const UserProfile = async () => {
-  return <MainProfile />;
+  return (
+    <MainProfile />
+  );
   // return (
   //   <motion.div
   //     initial={{ opacity: 0 }}

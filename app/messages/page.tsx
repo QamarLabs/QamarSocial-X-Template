@@ -1,4 +1,5 @@
 // pages/protected.tsx
+import { NoRecordsTitle } from "@components/common/Titles";
 import { GetServerSideProps } from "next";
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
@@ -11,7 +12,7 @@ async function MessagesPage() {
 
   return (
     <div>
-      <h1>You have no messages</h1>
+      <NoRecordsTitle>You have no messages!</NoRecordsTitle>
     </div>
   );
 }

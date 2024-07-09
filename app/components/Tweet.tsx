@@ -15,6 +15,8 @@ import { stopPropagationOnClick } from "@utils/neo4j/index";
 import { likeTweet } from "@utils/update-tweets/likeTweet";
 import { retweet } from "@utils/update-tweets/retweet";
 import { bookmarkTweet } from "@utils/user/bookmarkTweet";
+import { useDispatch } from "react-redux";
+import { toggleLoginModal } from "@localredux/slices/modals";
 
 interface Props {
   tweet: TweetToDisplay;
@@ -35,6 +37,7 @@ function TweetComponent({
   retweets,
   likedTweets,
 }: Props) {
+  const dispatch = useDispatch();
   const router = useRouter();
   const [currentComments, setCurrentComments] = useState<Comment[]>(
     comments ?? []
@@ -52,6 +55,13 @@ function TweetComponent({
     const comments: Comment[] = await fetchComments(tweetInfo._id);
     setCurrentComments(comments);
   };
+  const checkUserIsLoggedInBeforeUpdatingTweet = async (callback: () => Promise<void>) => {
+    if(!userId)
+      return dispatch(toggleLoginModal(true));
+    
+    await callback();
+  }
+
 
   useLayoutEffect(() => {
     //If any of the bookmarks are not undefined, that means
@@ -91,21 +101,28 @@ function TweetComponent({
     router.push(`status/${tweetInfo._id}`);
   };
 
+
   const onLikeTweet = async () => {
-    await likeTweet(tweet.tweet._id, userId!, isLiked);
-    setIsLiked(!isLiked);
+    await checkUserIsLoggedInBeforeUpdatingTweet(async () => {
+      await likeTweet(tweet.tweet._id, userId!, isLiked);
+      setIsLiked(!isLiked);
+    });
   };
 
   const onRetweet = async () => {
-    await retweet(tweet.tweet._id, userId!, isRetweeted);
-    setIsRetweeted(!isRetweeted);
+    await checkUserIsLoggedInBeforeUpdatingTweet(async () => {
+      await retweet(tweet.tweet._id, userId!, isRetweeted);
+      setIsRetweeted(!isRetweeted);
+    });
   };
 
   const commentOnTweet = () => {};
 
   const onBookmarkTweet = async () => {
-    await bookmarkTweet(tweet.tweet._id, userId!, isBookmarked);
-    setIsBookmarked(!isBookmarked);
+    await checkUserIsLoggedInBeforeUpdatingTweet(async () => {
+      await bookmarkTweet(tweet.tweet._id, userId!, isBookmarked);
+      setIsBookmarked(!isBookmarked);
+    });
   };
 
   return (
@@ -171,7 +188,10 @@ function TweetComponent({
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={(e) =>
-            stopPropagationOnClick(e, () => setCommentBoxOpen(!commentBoxOpen))
+            stopPropagationOnClick(e, () => {
+              dispatch(toggleLoginModal(true));
+              setCommentBoxOpen(!commentBoxOpen);
+            })
           }
           className="flex cursor-pointer item-center space-x-3 text-gray-400 hover:text-twitter"
         >
@@ -254,38 +274,33 @@ function TweetComponent({
       </div>
 
       {commentBoxOpen && (
-        // <>
-        //   {user ? (
-        //     <motion.div
-        //       initial={{ opacity: 0 }}
-        //       whileInView={{ opacity: 1 }}
-        //       viewport={{ once: true }}
-        //     >
-        //       <form className="mt-3 flex space-x-3">
-        //         <input
-        //           value={input}
-        //           onChange={(e) => setInput(e.target.value)}
-        //           className="flex-1 rounded-lg bg-gray-100 p-2 outline-none dark:bg-gray-700"
-        //           type="text"
-        //           placeholder="Write a comment..."
-        //         />
-        //         <button
-        //           onClick={handleSubmit}
-        //           disabled={!input}
-        //           type="submit"
-        //           className="text-twitter  disabled:text-gray-200 cursor-pointer"
-        //         >
-        //           Post
-        //         </button>
-        //       </form>
-        //     </motion.div>
-        //   ) :
-        // (
-        <div className="flex text-red-500 justify-center m-auto font-semibold">
-          <p>You Need To Sign IN</p>
-        </div>
-        //   )}
-        // </>
+        <>
+          {userId && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+            >
+              <form className="mt-3 flex space-x-3">
+                <input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  className="flex-1 rounded-lg bg-gray-100 p-2 outline-none dark:bg-gray-700"
+                  type="text"
+                  placeholder="Write a comment..."
+                />
+                <button
+                  onClick={handleSubmit}
+                  disabled={!input}
+                  type="submit"
+                  className="text-twitter  disabled:text-gray-200 cursor-pointer"
+                >
+                  Post
+                </button>
+              </form>
+            </motion.div>
+          )}
+        </>
       )}
       {commentBoxOpen && (
         <>

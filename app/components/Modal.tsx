@@ -1,15 +1,15 @@
 "use client";
 // components/Modal.tsx
 import React from 'react';
+import { createPortal } from 'react-dom';
 
-interface ModalProps {
-  isOpen: boolean;
+interface ModalBodyProps {
+  // isOpen: boolean;
   onClose: () => void;
   children: React.ReactNode;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
-  if (!isOpen) return null;
+const ModalBody = ({ onClose, children }: ModalBodyProps) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
@@ -51,4 +51,15 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
   );
 };
 
-export default Modal;
+const ModalPortal = ({ children }: React.PropsWithChildren<any>) => {
+  const [mounted, setMounted] = React.useState<boolean>(false);
+  
+  React.useEffect(() => {
+    setMounted(true);
+    return () => setMounted(false);
+  }, []);
+
+  return mounted ? createPortal(children, document.body) : null;
+}
+
+export {ModalBody, ModalPortal};

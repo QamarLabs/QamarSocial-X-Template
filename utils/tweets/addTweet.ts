@@ -1,7 +1,7 @@
-import { TweetBody } from "typings";
+import { TweetBody, TweetRecord } from "typings";
 
 export const addTweet = async (
-  newTweet: TweetBody
+  newTweet: TweetRecord
 ) => {
   try {
     const res = await fetch(

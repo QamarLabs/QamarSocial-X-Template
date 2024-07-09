@@ -1,8 +1,7 @@
 // app/api/tweets/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { defineDriver, read } from '@utils/neo4j/neo4j';
-import { TweetToDisplay } from '../../../typings';
-import { NextApiRequest, NextApiResponse } from 'next';
+import { defineDriver, read, write } from '@utils/neo4j/neo4j';
+import { TweetRecord, TweetToDisplay } from '../../../typings';
 
 
 async function GET(request: NextRequest) {
@@ -25,6 +24,7 @@ async function GET(request: NextRequest) {
                                   COLLECT(DISTINCT u) AS commenters,
                                   COLLECT(DISTINCT retweeter) AS retweeters,
                                   COLLECT(DISTINCT liker) AS likers
+                              ORDER BY tweet._createdAt DESCENDING
                               RETURN tweet,
                                     comments,
                                     commenters,
@@ -52,39 +52,35 @@ async function GET(request: NextRequest) {
 //   message: string;
 // };
 
-// export async function POST(
-//   req: NextApiRequest,
-//   res: NextApiResponse<Data>
-// ) {
-//   const data: TweetBody = JSON.parse(req.body);
-//   const mutations = {
-//     mutations: [
-//       {
-//         create: {
-//           _type: "tweet",
-//           text: data.text,
-//           username: data.username,
-//           blockTweet: false,
-//           profileImg: data.profileImg,
-//           image: data.image,
-//         },
-//       },
-//     ],
-//   };
+async function POST(
+  request: NextRequest,
+) {
+  const data: TweetRecord = await request.json();
+  const driver = defineDriver();
+  const session = driver.session();
+  try {
+    if(!data.text)
+      throw new Error("Tweet requires text.");
 
-//   const apiEndPoint = `https://${process.env.NEXT_PUBLIC_SANITY_PROJECT_ID}.api.sanity.io/v2021-06-07/data/mutate/${process.env.NEXT_PUBLIC_SANITY_DATASET}`;
-
-//   const result = await fetch(apiEndPoint, {
-//     headers: {
-//       "content-type": "application/json",
-//       Authorization: `Bearer ${process.env.SANITY_API_TOKEN}`,
-//     },
-//     body: JSON.stringify(mutations),
-//     method: "POST",
-//   });
-
-//   const json = await result.json();
-
-//   res.status(200).json({ message: "Added" });
-// }
-export { GET };
+    await write(session, `
+      MATCH (u:User {username: $username})
+      CREATE (u)-[:POSTED]->(t:Tweet {
+        _id: $_id,
+        _createdAt: datetime(),
+        _updatedAt: datetime(),
+        _rev: $_rev,
+        _type: $_type,
+        blockTweet: $blockTweet,
+        text: $text,
+        username: $username,
+        profileImg: $profileImg,
+        image: $image
+      })
+      `, { ...data })
+  
+    return NextResponse.json({ success: true });
+  } catch(error) {
+    return NextResponse.json({ success: false });
+  }
+}
+export { GET, POST };

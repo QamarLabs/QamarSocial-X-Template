@@ -2,10 +2,6 @@
 import { defineDriver, write } from "@utils/neo4j/neo4j";
 import { NextRequest, NextResponse } from "next/server";
 
-type Data = {
-  message: string;
-};
-
 async function POST(
   request: NextRequest,
   { params }: { params: { user_id: string } }

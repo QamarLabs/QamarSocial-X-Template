@@ -27,10 +27,10 @@ export const feedSlice = createSlice({
     setFeedTweets: (state, { payload:newFeedTweets }: PayloadAction<TweetToDisplay[]>) => {
       state.feedTweets = newFeedTweets;
     },
-    resetSearchState: () => initialState
+    resetFeedState: () => initialState
   },
 });
 
-export const { setNewPage, setSearchParams, setSearchQry, setFeedTweets, resetSearchState } = feedSlice.actions;
+export const { setNewPage, setSearchParams, setSearchQry, setFeedTweets, resetFeedState } = feedSlice.actions;
 
 export default feedSlice.reducer;

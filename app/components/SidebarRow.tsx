@@ -17,13 +17,12 @@ interface SidebarRowProps {
 function SidebarRow({
   Icon,
   title,
-  isShow,
   onClick,
   classNames,
   href,
 }: SidebarRowProps) {
   const router = useRouter();
-
+  
   const sidebarOnClick = async (e: React.MouseEvent) => {
     if (!nonRoutableTitles.includes(title)) router.push(href!);
     else {
@@ -40,7 +39,7 @@ function SidebarRow({
   return (
     <>
       <CommonLink {...commonLinkProps}>
-        <Icon className="h-6 w-6 " />
+        <Icon className="h-4 w-4 md:h-6 md:w-6 flex-shrink-0" />
         <p className="hidden group-hover:text-twitter md:inline-flex text-base font-light">
           {title}
         </p>

@@ -1,12 +1,8 @@
 import { TweetToDisplay } from "../../typings";
 
-export interface Params {
-  query: string
-}
-
-export const fetchBookmarks = async (params?: Params | undefined) => {
+export const fetchBookmarks = async (username: string) => {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/bookmarks`, { method: "GET" });
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/users/${username}/bookmarks`, { method: "GET" });
     if(!res.ok) {
       throw new Error("Error fetching bookmarks");
     }

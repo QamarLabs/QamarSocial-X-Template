@@ -34,8 +34,8 @@ async function seed(users, tweets, comments) {
             `
             CREATE (u:User {
               _id: $_id,
-              _createdAt: $_createdAt,
-              _updatedAt: $_updatedAt,
+              _createdAt: datetime(),
+              _updatedAt: datetime(),
               username: $username,
               countryOfOrigin: $countryOfOrigin,
               email: $email,
@@ -64,8 +64,8 @@ async function seed(users, tweets, comments) {
             `MATCH (u:User {username: $username})
                      CREATE (u)-[:POSTED]->(t:Tweet {
                        _id: $_id,
-                       _createdAt: $_createdAt,
-                       _updatedAt: $_updatedAt,
+                       _createdAt: datetime(),
+                       _updatedAt: datetime(),
                        _rev: $_rev,
                        _type: $_type,
                        blockTweet: $blockTweet,

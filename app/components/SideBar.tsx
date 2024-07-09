@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useCallback } from "react";
 import {
   BellIcon,
   HashtagIcon,
@@ -19,41 +19,44 @@ import SidebarRow from "./SidebarRow";
 import DarkSwitch from "./DarkSwitch";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import Modal from "./Modal";
 import Image from "next/image";
 import { stopPropagationOnClick } from "@utils/neo4j/index";
 import { User } from "typings";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@localredux/store";
+import { toggleLoginModal } from "@localredux/slices/modals";
 
 type SideBarProps = {
-  isShow: boolean;
-  isHome: boolean;
 };
 
-const SideBar: React.FC<SideBarProps> = ({ isShow, isHome }) => {
+const SideBar = ({}: SideBarProps) => {
   const { data: session } = useSession();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = React.useState<boolean>(false);
-  const [isModalOpen, setModalOpen] = React.useState<boolean>(false);
+  // const { showLoginModal } = useSelector((store: RootState) => store.modals);
+  const dispatch = useDispatch();
 
-  const openModal = () => setModalOpen(true);
-  const closeModal = () => setModalOpen(false);
-  const handleGoogleSignIn = () => signIn("google");
+  const openModal = () => dispatch(toggleLoginModal(true));
 
-  const handleDropdownEnter = () => setIsDropdownOpen(!isDropdownOpen);
+  const handleDropdownEnter = useCallback(() => setIsDropdownOpen(!isDropdownOpen), []);
   // console.log("session.user:", session!.user);
   const username = session ? (session!.user as User).username : "";
+
   return (
     <>
-      <div className="col-span-1 sm:col-span-2 flex flex-col item-center px-4 md:items-start">
+      <div className="col-span-1 sm:col-span-2 flex flex-col item-center px-1 md:px-4 md:items-start">
+      <div className="flex justify-start">
         <img
           className={`
-            rounded-full m-0 mt-3 h-13 w-14 sm:h-12 sm:w-13 
-            transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-600
+              m-0 h-full w-full md:h-13 md:w-14 transition-all duration-200 
+              hover:bg-gray-100 dark:hover:bg-gray-600
           `}
           src="https://res.cloudinary.com/aa1997/image/upload/v1717352649/k5kuqij3llmmf5mzsex7.png"
           alt=""
+          style={{ maxWidth: 'unset' }}
           onClick={() => router.push("/")}
         />
+        </div>
         <SidebarRow Icon={HashtagIcon} title="Explore" href="/explore" />
         <SidebarRow
           Icon={BellIcon}
@@ -108,17 +111,17 @@ const SideBar: React.FC<SideBarProps> = ({ isShow, isHome }) => {
             <div
               onClick={() => router.push(`/users/${username}`)}
               className="group flex max-w-fit
-        cursor-pointer items-center space-x-2 rounded-full px-4 py-3
+        cursor-pointer items-center space-x-2 rounded-full px-1 md:px-4 py-1 py-3
         transition-all duration-200 hover:bg-purple-200 dark:hover:bg-gray-600 mb-1 mt-1"
             >
               <img
-                className="m-0 mt-3 h-14 w-14 sm:h-12 sm:w-13 rounded-full"
+                className="m-0 mt-3 w-full h-full md:h-14 md:w-14 rounded-full"
                 src={session!.user!.image!}
                 alt="Avatar"
                 loading="lazy"
               />
               {/* <div className="flex flex-col justify-center  p-3 opacity-50 text-xs sm:text-sm lg:text-md"> */}
-              <div className="flex flex-col hidden group-hover:text-twitter md:inline-flex text-base font-light text-xs lg:text-sm">
+              <div className="flex flex-col display-none md:display-initial hidden group-hover:text-twitter md:inline-flex text-base font-light text-xs lg:text-sm">
                 <p>{session!.user!.name}</p>
                 <p>@{session!.user!.email}</p>
               </div>
@@ -126,21 +129,6 @@ const SideBar: React.FC<SideBarProps> = ({ isShow, isHome }) => {
           </>
         )}
       </div>
-      <Modal isOpen={isModalOpen} onClose={closeModal}>
-        <button
-          className="flex items-center p-3 border border-red-500 rounded-lg text-red-500 font-bold hover:bg-red-500 hover:text-white"
-          onClick={handleGoogleSignIn}
-        >
-          <Image
-            src="/google-icon.svg"
-            height={20}
-            width={20}
-            alt="Google Social Button Icon"
-            className="mr-2"
-          />
-          Sign in with Google
-        </button>
-      </Modal>
     </>
   );
 };

@@ -10,6 +10,10 @@ export enum TypeOfFeed {
   Search = "search"
 }
 
+export interface ReduxModalsState {
+  showLoginModal: boolean;
+}
+
 export interface ReduxSearchState extends CommonReduxTweetsState {
   searchedTweets: TweetToDisplay[];
 }

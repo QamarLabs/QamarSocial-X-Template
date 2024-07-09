@@ -1,14 +1,12 @@
 const { faker } = require("@faker-js/faker");
 
 const generateRandomImage = () => {
-  const images = [ faker.image.animals(), faker.image.people(), faker.image.nightlife(), faker.image.sports()];
+  const images = [ faker.image.animals(), faker.image.people(), faker.image.cats(), faker.image.sports()];
   const randomIdx = Math.floor(Math.random() * images.length);
   return images[randomIdx]
 }
 const generateRandomUser = () => ({
   _id: faker.datatype.uuid(),
-  _createdAt: faker.date.past().toISOString(),
-  _updatedAt: faker.date.recent().toISOString(),
   username: faker.internet.userName(),
   bgThumbnail: faker.image.city(),
   avatar: faker.image.people(),
@@ -51,12 +49,10 @@ const generateRandomUser = () => ({
 
 const generateRandomTweet = (username, profileImg) => ({
   _id: faker.datatype.uuid(),
-  _createdAt: faker.date.past().toISOString(),
-  _updatedAt: faker.date.recent().toISOString(),
   _rev: faker.datatype.uuid(),
   _type: "tweet",
   blockTweet: faker.datatype.boolean(),
-  text: faker.lorem.sentence(100),
+  text: faker.lorem.sentence(3),
   username: username,
   profileImg: profileImg,
   image: generateRandomImage(),

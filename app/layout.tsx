@@ -25,6 +25,36 @@ const LoadingSpinner = dynamic(
   { ssr: false }
 );
 
+
+export const metadata: Metadata = {
+  title: "Qamar Social",
+  description: "The X Clone",
+  icons: "https://res.cloudinary.com/aa1997/image/upload/v1720488120/Qamar_Social-removebg-preview.png",
+  openGraph: {
+    title: "Qamar Social",
+    description: "The X Clone",
+    url: "https://myapp.com",
+
+    images: [
+      {
+        url: "https://res.cloudinary.com/aa1997/image/upload/v1720488120/Qamar_Social-removebg-preview.png",
+        width: 560,
+        height: 440,
+        alt: "Qamar Social ",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@qamarsocial",
+    creator: "@qamarsocial",
+    title: "Qamar Social",
+    description: "The X Clone",
+    images:
+      "https://res.cloudinary.com/aa1997/image/upload/v1720488120/Qamar_Social-removebg-preview.png",
+  },
+};
+
 interface LayoutProps {
   className?: string;
   metadata?: Metadata;
