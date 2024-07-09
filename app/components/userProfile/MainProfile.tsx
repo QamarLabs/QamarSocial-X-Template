@@ -2,10 +2,9 @@
 // import { useRouter } from "next/navigation";
 import React, { useCallback, useEffect, useLayoutEffect, useState } from "react";
 import {
+  DashboardTweetToDisplay,
   ProfileUser,
   TweetToDisplay,
-  User,
-  UserProfileTweets,
 } from "../../../typings";
 import TweetComponents from "../Tweet";
 import UserHeader from "./UserHeader";
@@ -23,16 +22,26 @@ const MainProfile = () => {
   const params = useParams();
   const { name } = params;
   const username = name as string;
-  const [tweets, setTweets] = useState<UserProfileTweets>();
+  const [userTweets, setUserTweets] = useState<DashboardTweetToDisplay[]>();
+  const [bookmarkedTweets, setBookmarkedTweets] = useState<DashboardTweetToDisplay[]>();
+  const [likedTweets, setLikedTweets] = useState<DashboardTweetToDisplay[]>();
+  const [retweetedTweets, setRetweetedTweets] = useState<DashboardTweetToDisplay[]>();
+  const [repliedTweets, setRepliedTweets] = useState<DashboardTweetToDisplay[]>();
+
   const [userInfo, setUserInfo] = useState<ProfileUser | undefined>(undefined);
 
   useLayoutEffect(() => {
     async function getProfileInfo() {
-      const twts = await fetchUserTweets(username);
+      const dTwts = await fetchUserTweets(username);
       const uInfo = await fetchUserInfo(username);
-      setTweets(twts);
+      setUserTweets(dTwts?.userTweets);
+      setBookmarkedTweets(dTwts?.bookmarkedTweets);
+      setLikedTweets(dTwts?.likedTweets);
+      setRetweetedTweets(dTwts?.retweetedTweets);
+      setRepliedTweets(dTwts?.repliedTweets);
       setUserInfo(uInfo);
       console.log("uInfo:", uInfo);
+      console.log('dTwts:', dTwts)
     }
 
     getProfileInfo();
@@ -41,7 +50,7 @@ const MainProfile = () => {
   // const [user] = useAuthState(auth);
   // const router = useRouter();
   const renderer = useCallback(
-    (twt: TweetToDisplay) => (
+    (twt: DashboardTweetToDisplay) => (
       <TweetComponents
         key={twt.tweet._id}
         tweet={twt}
@@ -71,31 +80,31 @@ const MainProfile = () => {
                   {
                     tabKey: "recent",
                     title: "Recent",
-                    content: tweets?.userTweets ?? [],
+                    content: userTweets ?? [],
                     renderer,
                   },
                   {
                     tabKey: "retweets",
                     title: "Retweets",
-                    content: tweets?.retweetedTweets ?? [],
+                    content: retweetedTweets ?? [],
                     renderer,
                   },
                   {
                     tabKey: "bookmarks",
                     title: "Bookmarks",
-                    content: tweets?.bookmarkedTweets ?? [],
+                    content: bookmarkedTweets ?? [],
                     renderer,
                   },
                   {
                     tabKey: "replied-tweets",
                     title: "Replies",
-                    content: tweets?.commentedTweets ?? [],
+                    content: repliedTweets ?? [],
                     renderer,
                   },
                   {
                     tabKey: "liked-tweets",
                     title: "Liked Tweets",
-                    content: tweets?.retweetedTweets ?? [],
+                    content: likedTweets ?? [],
                     renderer,
                   },
                 ]}

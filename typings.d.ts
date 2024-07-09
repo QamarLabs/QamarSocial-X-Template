@@ -25,12 +25,16 @@ export interface ReduxExploreState extends CommonReduxTweetsState {
   exploreTweets: TweetToDisplay[];
 }
 
-export interface UserProfileTweets {
-  likedTweet: TweetToDisplay[];
-  retweetedTweets: TweetToDisplay[];
-  bookmarkedTweets: TweetToDisplay[];
-  commentedTweets: TweetToDisplay[];
-  userTweets: TweetToDisplay[];
+export interface UserProfileDashboardTweets {
+  userTweets: DashboardTweetToDisplay[];
+  bookmarkedTweets: DashboardTweetToDisplay[];
+  likedTweets: DashboardTweetToDisplay[];
+  retweetedTweets: DashboardTweetToDisplay[];
+  repliedTweets: DashboardTweetToDisplay[];
+}
+
+export interface DashboardTweetToDisplay extends TweetToDisplay {
+  type: string;
 }
 export interface TweetToDisplay {
   tweet: TweetRecord,

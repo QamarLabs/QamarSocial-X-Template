@@ -20,8 +20,12 @@ export async function read(session: Session, cypher = "", params = {}, alias?: s
         for(const aIdx in alias) {
            const aKey = alias[aIdx];
            const recordBasedOnAlias = record.get(aKey);
-           result[aKey] = recordBasedOnAlias.length ? recordBasedOnAlias.map((r: Node) => r.properties) : recordBasedOnAlias.properties ?? [];
-          }
+
+           if(typeof recordBasedOnAlias === 'object')
+            result[aKey] = recordBasedOnAlias && Array.isArray(recordBasedOnAlias) && recordBasedOnAlias.length ? recordBasedOnAlias.map((r: Node) => r.properties) : recordBasedOnAlias.properties ?? [];
+          else
+            result[aKey] = recordBasedOnAlias;
+        }
 
         return result;
       }
