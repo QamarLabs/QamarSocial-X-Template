@@ -17,19 +17,32 @@ import { addTweet } from "@utils/tweets/addTweet";
 import Picker from "@emoji-mart/react";
 import emojiData from "@emoji-mart/data";
 import { faker } from "@faker-js/faker";
+import { AppDispatch, FilterKeys, RootState } from "@localredux/store";
+import { useDispatch, useSelector } from "react-redux";
+// import { setFeedTweets } from "@localredux/slices/feed";
+// import { setExploreTweets } from "@localredux/slices/explore";
+// import { setSearchedTweets } from "@localredux/slices/search";
+import { setTweets } from "@utils/redux";
 
 interface Props {
-  tweets: TweetToDisplay[];
-  setTweets: (twts: TweetToDisplay[]) => void;
-  searchParams: Params;
-  setSearchParams?: (sParams: Params) => void;
+  filterKey: FilterKeys;
 }
 
-function TweetBox({ tweets, setTweets, searchParams, setSearchParams }: Props) {
+function TweetBox({ filterKey }: Props) {
+  const dispatch = useDispatch<AppDispatch>();
   const { data: session } = useSession();
   const [input, setInput] = useState<string>("");
   const [image, setImage] = useState<string>("");
   const [showEmojiPicker, setShowEmojiPicker] = useState<boolean>(false);
+  const filterState = useSelector((store: RootState) => {
+    if(filterKey === FilterKeys.Explore)
+      return store.explore;
+    else if(filterKey === FilterKeys.Search)
+      return store.search;
+    else 
+      return store.feed;
+  });
+
   const [submitting, setSubmitting] = useState(false);
   const imageInputRef = useRef<HTMLInputElement>(null);
 
@@ -85,7 +98,7 @@ function TweetBox({ tweets, setTweets, searchParams, setSearchParams }: Props) {
     await addTweet(tweetInfo);
 
     const newTweets = await fetchTweets(defaultSearchParams);
-    setTweets(newTweets!);
+    setTweets(dispatch, filterKey, newTweets!);
 
     toast("Tweet Posted", {
       icon: "🚀",

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { User } from "typings";
 import { Metadata } from "next";
+import { FilterKeys } from "@localredux/store";
 
 
 const Home = () => {
@@ -18,7 +19,7 @@ const Home = () => {
     }
   }, [router, session]);
 
-  return <Feed title="Popular Tweets" />;
+  return <Feed title="Popular Tweets" filterKey={FilterKeys.Normal} />;
 };
 
 export default Home;

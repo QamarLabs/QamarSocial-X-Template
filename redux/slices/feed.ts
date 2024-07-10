@@ -19,7 +19,7 @@ export const feedSlice = createSlice({
     setSearchQry: (state, { payload:newSearchQry }: PayloadAction<string>) => {
       state.searchQry = newSearchQry;
     },
-    setSearchParams: (state, { payload: searchParams }: PayloadAction<Params>) => {
+    setFeedSearchParams: (state, { payload: searchParams }: PayloadAction<Params>) => {
       state.page = searchParams.page!;
       state.limit = searchParams.limit!;
       state.searchQry = searchParams.search_term!;
@@ -31,6 +31,6 @@ export const feedSlice = createSlice({
   },
 });
 
-export const { setNewPage, setSearchParams, setSearchQry, setFeedTweets, resetFeedState } = feedSlice.actions;
+export const { setNewPage, setFeedSearchParams, setSearchQry, setFeedTweets, resetFeedState } = feedSlice.actions;
 
 export default feedSlice.reducer;

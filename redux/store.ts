@@ -5,6 +5,12 @@ import exploreSlice, { setExploreTweets } from './slices/explore';
 import { fetchTweets } from '@utils/tweets/fetchTweets';
 import modalsSlice from './slices/modals';
 
+export enum FilterKeys {
+  Search = 'search',
+  Explore = 'explore',
+  Normal = 'normal'
+}
+
 const createStore = (preloadedState = {}) => {
   return configureStore({
     reducer: {

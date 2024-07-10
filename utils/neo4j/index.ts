@@ -16,6 +16,21 @@ export function retrieveQueryString(params: Params | undefined) {
   return queryString;
 }
 
+export function convertQueryStringToObject(queryString: string) {
+  // Convert the query string to an object
+  const queryParams = new URLSearchParams(queryString);
+
+  // Create an object to hold the parameters
+  const paramsObject: any = {};
+
+  // Loop through each parameter and add it to the object
+  for (let [key, value] of queryParams) {
+    paramsObject[key] = value;
+  }
+
+  return { page: paramsObject["page"], limit: paramsObject["limit"], search_term: paramsObject["searchTerm"]} as Params;
+}
+
 export function stopPropagationOnClick<T>(
   e: React.MouseEvent<T>,
   callback: Function
@@ -37,11 +52,15 @@ export const defaultSearchParams = {
   search_term: "",
 };
 
-export const isTweetSearchAMatch = (twt: TweetToDisplay, searchQry: string): boolean => {
+export const isTweetSearchAMatch = (
+  twt: TweetToDisplay,
+  searchQry: string
+): boolean => {
   return (
     twt.tweet.username.includes(searchQry) ||
     twt.tweet.text.includes(searchQry) ||
     twt.tweet._id === searchQry ||
-    twt.commenters.some(c => c.username === searchQry)
+    twt.commenters.some((c) => c.username === searchQry)
   );
-}
+};
+

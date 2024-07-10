@@ -20,7 +20,7 @@ export const exploreSlice = createSlice({
     setSearchQry: (state, { payload:newSearchQry }: PayloadAction<string>) => {
       state.searchQry = newSearchQry;
     },
-    setSearchParams: (state, { payload: searchParams }: PayloadAction<Params>) => {
+    setExploreSearchParams: (state, { payload: searchParams }: PayloadAction<Params>) => {
       state.page = searchParams.page!;
       state.limit = searchParams.limit!;
       state.searchQry = searchParams.search_term!;
@@ -32,6 +32,6 @@ export const exploreSlice = createSlice({
   },
 });
 
-export const { setNewPage, setSearchParams, setSearchQry, setExploreTweets, resetExploreState } = exploreSlice.actions;
+export const { setNewPage, setExploreSearchParams, setSearchQry, setExploreTweets, resetExploreState } = exploreSlice.actions;
 
 export default exploreSlice.reducer;

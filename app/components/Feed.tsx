@@ -1,22 +1,31 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { RefreshIcon } from "@heroicons/react/outline";
-import { TweetToDisplay } from "../../typings";
+import {
+  DashboardTweetToDisplay,
+  ReduxExploreState,
+  ReduxFeedState,
+  ReduxSearchState,
+  TweetToDisplay,
+} from "../../typings";
 import TweetComponents from "./Tweet";
 import { fetchTweets } from "../../utils/tweets/fetchTweets";
 import toast from "react-hot-toast";
 
 import { useSession } from "next-auth/react";
 import TweetBox from "./TweetBox";
-import useGetTweets from "hooks/useGetTweets";
-import { useSelector } from "react-redux";
-import { RootState } from "@localredux/store";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, FilterKeys, RootState } from "@localredux/store";
+import { setFilterState, setTweets } from "@utils/redux";
+import { useSearchParams } from "next/navigation";
+import { convertQueryStringToObject, Params } from "@utils/neo4j";
+import CustomPageLoader from "./common/CustomLoader";
 
 interface Props {
-  title: string;
-  searchServer?: boolean;
+  title?: string;
+  filterKey?: FilterKeys;
   hideTweetBox?: boolean;
-  tweets?: TweetToDisplay[];
+  tweets?: TweetToDisplay[] | DashboardTweetToDisplay[];
 }
 
 function FeedContainer({ children }: React.PropsWithChildren<any>) {
@@ -27,52 +36,85 @@ function FeedContainer({ children }: React.PropsWithChildren<any>) {
   );
 }
 
-function Feed({ title, searchServer, hideTweetBox }: Props) {
+function Feed({ title, filterKey, hideTweetBox, tweets }: Props) {
+  const searchParams = useSearchParams();
   const { data: session } = useSession();
   const { user } = session ?? {};
-  // let feedKey = "";
-  // let stateKey = "";
-  // if(type === TypeOfFeed.Explore) {
-  //   stateKey = "explore";
-  //   feedKey = 'exploreTweets';
-  // } else if (type === TypeOfFeed.Search) {
-  //   stateKey = "search";
-  //   feedKey = 'searchTweets';
-  // } else {
-  //   stateKey = "feed";
-  //   feedKey = 'feedTweets';
-  // }
-  // const stateStore = useSelector((store: RootState) => store[stateKey as keyof RootState])
-  const { searchParams, setSearchParams, tweets, setTweets } = useGetTweets(
-    searchServer ?? false
-  );
-  // alert(JSON.stringify(tweets));
+  const dispatch = useDispatch<AppDispatch>();
+  const [loading, setLoading] = useState<boolean>(false);
+  const filterState = useSelector((store: RootState) => {
+    if (filterKey === FilterKeys.Explore) return store.explore;
+    else if (filterKey === FilterKeys.Search) return store.search;
+    else return store.feed;
+  });
+
+  useEffect(() => {
+    async function getTweets() {
+      setLoading(true);
+      try {
+        const paramsFromQryString = convertQueryStringToObject(
+          window.location.search
+        );
+        if (
+          JSON.stringify(paramsFromQryString) !==
+          JSON.stringify({
+            page: filterState.page,
+            limit: filterState.limit,
+            search_term: filterState.searchQry,
+          } as Params)
+        )
+          setFilterState(dispatch, filterKey!, paramsFromQryString);
+
+        const twts = await fetchTweets({
+          page: paramsFromQryString.page,
+          limit: paramsFromQryString.limit,
+          search_term: paramsFromQryString.search_term,
+        });
+
+        setTweets(dispatch, filterKey!, twts!);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    if (!filterKey) return;
+
+    getTweets();
+  }, [searchParams]);
+
+  const loadedTweets = useMemo(() => {
+    if (filterKey === FilterKeys.Explore)
+      return (filterState as ReduxExploreState).exploreTweets;
+    else if (filterKey === FilterKeys.Search)
+      return (filterState as ReduxSearchState).searchedTweets;
+    else return (filterState as ReduxFeedState).feedTweets;
+  }, [filterState]);
+
   return (
     <div className="col-span-7 scrollbar-hide border-x max-h-screen overflow-scroll lg:col-span-5 dark:border-gray-800">
       <div>
         {session && !hideTweetBox && (
-          <TweetBox
-            searchParams={searchParams}
-            setSearchParams={setSearchParams}
-            tweets={tweets}
-            setTweets={setTweets}
-          />
+          <TweetBox filterKey={filterKey ? filterKey : FilterKeys.Normal} />
         )}
       </div>
       <div>
-        <React.Suspense fallback={<h1>Loading...</h1>}>
-          {(tweets ?? []).map((tweet, tweetKey) => (
-            <TweetComponents
-              key={tweet.tweet._id ?? tweetKey}
-              tweet={tweet}
-              pushNote={true}
-              userId={user ? (user as any)["_id"] : ""}
-              bookmarks={user ? (user as any)["bookmarks"] : ""}
-              retweets={user ? (user as any)["retweets"] : ""}
-              likedTweets={user ? (user as any)["likedTweets"] : ""}
-            />
-          ))}
-        </React.Suspense>
+        {loading ? (
+          <CustomPageLoader title="Loading" />
+        ) : (
+          <>
+            {(tweets ? tweets : loadedTweets ?? []).map((tweet, tweetKey) => (
+              <TweetComponents
+                key={tweet.tweet._id ?? tweetKey}
+                tweet={tweet}
+                pushNote={true}
+                userId={user ? (user as any)["_id"] : ""}
+                bookmarks={user ? (user as any)["bookmarks"] : ""}
+                retweets={user ? (user as any)["retweets"] : ""}
+                likedTweets={user ? (user as any)["likedTweets"] : ""}
+              />
+            ))}
+          </>
+        )}
       </div>
     </div>
   );
