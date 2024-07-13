@@ -53,7 +53,7 @@ async function GET(
         // Liked Tweets
         MATCH (u:User {username: $username})
         MATCH (tweet:Tweet)
-        WHERE (u)-[:LIKED]->(tweet)
+        WHERE (u)-[:LIKES]->(tweet)
         OPTIONAL MATCH (tweet)-[:HAS_COMMENT]->(c:Comment)<-[:COMMENTED]-(u:User)
         OPTIONAL MATCH (tweet)-[:RETWEETS]->(retweeter:User)
         OPTIONAL MATCH (tweet)-[:LIKED]->(liker:User)

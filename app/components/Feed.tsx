@@ -90,6 +90,11 @@ function Feed({ title, filterKey, hideTweetBox, tweets }: Props) {
     else return (filterState as ReduxFeedState).feedTweets;
   }, [filterState]);
 
+  const userId = useMemo(() => user ? (user as any)["_id"] : "", [session]);
+  const bookmarks = useMemo(() => user ? (user as any)["bookmarks"] : undefined, [session]);
+  const retweets = useMemo(() => user ? (user as any)["retweets"] : undefined, [session]);
+  const likedTweets = useMemo(() => user ? (user as any)["likedTweets"] : undefined, [session]);
+
   return (
     <div className="col-span-7 scrollbar-hide border-x max-h-screen overflow-scroll lg:col-span-5 dark:border-gray-800">
       <div>
@@ -107,10 +112,10 @@ function Feed({ title, filterKey, hideTweetBox, tweets }: Props) {
                 key={tweet.tweet._id ?? tweetKey}
                 tweet={tweet}
                 pushNote={true}
-                userId={user ? (user as any)["_id"] : ""}
-                bookmarks={user ? (user as any)["bookmarks"] : ""}
-                retweets={user ? (user as any)["retweets"] : ""}
-                likedTweets={user ? (user as any)["likedTweets"] : ""}
+                userId={userId}
+                bookmarks={bookmarks}
+                retweets={retweets}
+                likedTweets={likedTweets}
               />
             ))}
           </>

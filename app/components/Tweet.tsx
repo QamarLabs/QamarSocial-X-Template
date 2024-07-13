@@ -3,25 +3,34 @@ import { faker } from "@faker-js/faker";
 import { BookmarkIcon, HeartIcon, UploadIcon } from "@heroicons/react/outline";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import React, { useLayoutEffect, useState } from "react";
-import { useAuthState } from "react-firebase-hooks/auth";
+import React, {
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import toast from "react-hot-toast";
 import TimeAgo from "react-timeago";
 
 // import { auth } from "../firebase/firebase";
-import { Comment, TweetToDisplay } from "../../typings";
+import { Comment, TweetToDisplay, User } from "../../typings";
 import { fetchComments } from "@utils/tweets/fetchComments";
-import { stopPropagationOnClick } from "@utils/neo4j/index";
+import {
+  getPercievedNumberOfRecord,
+  stopPropagationOnClick,
+} from "@utils/neo4j/index";
 import { likeTweet } from "@utils/update-tweets/likeTweet";
 import { retweet } from "@utils/update-tweets/retweet";
 import { bookmarkTweet } from "@utils/user/bookmarkTweet";
 import { useDispatch } from "react-redux";
 import { toggleLoginModal } from "@localredux/slices/modals";
+import { BookmarkIcon as BookmarkFillIcon } from "@heroicons/react/solid";
 
 interface Props {
   tweet: TweetToDisplay;
   comments?: Comment[];
   userId: string | undefined;
+  username?: string | undefined;
   bookmarks?: string[];
   retweets?: string[];
   likedTweets?: string[];
@@ -32,7 +41,7 @@ function TweetComponent({
   tweet,
   comments,
   userId,
-  pushNote,
+  username,
   bookmarks,
   retweets,
   likedTweets,
@@ -47,7 +56,39 @@ function TweetComponent({
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
   const [isRetweeted, setIsRetweeted] = useState<boolean>(false);
   const [isLiked, setIsLiked] = useState<boolean>(false);
+  const initiallyBooleanValues = useRef<{
+    retweeted: boolean;
+    liked: boolean;
+    commented: boolean;
+  }>({
+    retweeted: false,
+    liked: false,
+    commented: false,
+  });
 
+  const numberOfRetweets = useMemo(
+    () =>
+      getPercievedNumberOfRecord<User>(
+        isRetweeted,
+        initiallyBooleanValues.current?.retweeted,
+        tweet.retweeters ?? []
+      ),
+    [isRetweeted]
+  );
+  const numberOfLikes = useMemo(
+    () =>
+      getPercievedNumberOfRecord<User>(
+        isLiked,
+        initiallyBooleanValues.current?.liked,
+        tweet.likers ?? []
+      ),
+    [isLiked]
+  );
+  const numberOfComments = useMemo(() => {
+    return currentComments.some((comm: Comment) => comm.username === username)
+      ? currentComments.length + 1
+      : currentComments.length;
+  }, [currentComments]);
   // const isBookmarkedRef = useRef<boolean>(bookmarks?.some(bk => bk === tweet.tweet._id) ?? false);
 
   const tweetInfo = tweet.tweet;
@@ -55,27 +96,34 @@ function TweetComponent({
     const comments: Comment[] = await fetchComments(tweetInfo._id);
     setCurrentComments(comments);
   };
-  const checkUserIsLoggedInBeforeUpdatingTweet = async (callback: () => Promise<void>) => {
-    if(!userId)
-      return dispatch(toggleLoginModal(true));
-    
-    await callback();
-  }
+  const checkUserIsLoggedInBeforeUpdatingTweet = async (
+    callback: () => Promise<void>
+  ) => {
+    if (!userId) return dispatch(toggleLoginModal(true));
 
+    await callback();
+  };
 
   useLayoutEffect(() => {
     //If any of the bookmarks are not undefined, that means
     if (userId) {
-      setIsBookmarked(bookmarks?.some((bk) => bk === tweet.tweet._id) ?? false);
-      setIsRetweeted(
-        retweets?.some((retweet) => retweet === tweet.tweet._id) ?? false
-      );
-      setIsLiked(
+      const twtAlreadyLiked =
         likedTweets?.some((likedTweet) => likedTweet === tweet.tweet._id) ??
-          false
-      );
+        false;
+
+      const twtAlreadyRetweeted =
+        retweets?.some((retweet) => retweet === tweet.tweet._id) ?? false;
+
+      initiallyBooleanValues.current = {
+        liked: twtAlreadyLiked,
+        retweeted: twtAlreadyRetweeted,
+        commented: false,
+      };
+      setIsBookmarked(bookmarks?.some((bk) => bk === tweet.tweet._id) ?? false);
+      setIsRetweeted(twtAlreadyRetweeted);
+      setIsLiked(twtAlreadyLiked);
     }
-  }, []);
+  }, [userId]);
 
   const handleSubmit = async (
     e: React.MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
@@ -101,28 +149,42 @@ function TweetComponent({
     router.push(`status/${tweetInfo._id}`);
   };
 
-
   const onLikeTweet = async () => {
-    await checkUserIsLoggedInBeforeUpdatingTweet(async () => {
-      await likeTweet(tweet.tweet._id, userId!, isLiked);
+    const beforeUpdate = isLiked;
+    try {
       setIsLiked(!isLiked);
-    });
+      await checkUserIsLoggedInBeforeUpdatingTweet(async () => {
+        await likeTweet(tweet.tweet._id, userId!, isLiked);
+      });
+    } catch {
+      setIsLiked(beforeUpdate);
+    }
   };
 
   const onRetweet = async () => {
-    await checkUserIsLoggedInBeforeUpdatingTweet(async () => {
-      await retweet(tweet.tweet._id, userId!, isRetweeted);
+    const beforeUpdate = isRetweeted;
+    try {
       setIsRetweeted(!isRetweeted);
-    });
+      await checkUserIsLoggedInBeforeUpdatingTweet(async () => {
+        await retweet(tweet.tweet._id, userId!, isRetweeted);
+      });
+    } catch {
+      setIsRetweeted(beforeUpdate);
+    }
   };
 
   const commentOnTweet = () => {};
 
   const onBookmarkTweet = async () => {
-    await checkUserIsLoggedInBeforeUpdatingTweet(async () => {
-      await bookmarkTweet(tweet.tweet._id, userId!, isBookmarked);
+    const beforeUpdate = isBookmarked;
+    try {
       setIsBookmarked(!isBookmarked);
-    });
+      await checkUserIsLoggedInBeforeUpdatingTweet(async () => {
+        await bookmarkTweet(tweet.tweet._id, userId!, isBookmarked);
+      });
+    } catch {
+      setIsBookmarked(beforeUpdate);
+    }
   };
 
   return (
@@ -210,7 +272,7 @@ function TweetComponent({
             />
           </svg>
 
-          <p className="text-center">{tweet.comments?.length ?? 0}</p>
+          <p className="text-center">{numberOfComments}</p>
         </motion.div>
         <motion.div
           whileHover={{ scale: 1.1 }}
@@ -237,7 +299,7 @@ function TweetComponent({
             />
           </svg>
 
-          <p className="text-center">{tweet.retweeters?.length ?? 0}</p>
+          <p className="text-center">{numberOfRetweets}</p>
         </motion.div>
         <motion.div
           whileHover={{ scale: 1.1 }}
@@ -248,7 +310,7 @@ function TweetComponent({
           onClick={(e) => stopPropagationOnClick(e, onLikeTweet)}
         >
           <HeartIcon className="h-5 w-5" />
-          <p className="text-center">{tweet.likers?.length ?? 0}</p>
+          <p className="text-center">{numberOfLikes}</p>
         </motion.div>
         <div className="flex gap-2">
           <motion.div
@@ -261,7 +323,11 @@ function TweetComponent({
             `}
             onClick={(e) => stopPropagationOnClick(e, onBookmarkTweet)}
           >
-            <BookmarkIcon className="h-5 w-5" />
+            {isBookmarked ? (
+              <BookmarkFillIcon className="h-5 w-5" />
+            ) : (
+              <BookmarkIcon className="h-5 w-5" />
+            )}
           </motion.div>
           <motion.div
             whileHover={{ scale: 1.1 }}

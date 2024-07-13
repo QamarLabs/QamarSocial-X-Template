@@ -28,7 +28,11 @@ export function convertQueryStringToObject(queryString: string) {
     paramsObject[key] = value;
   }
 
-  return { page: paramsObject["page"], limit: paramsObject["limit"], search_term: paramsObject["searchTerm"]} as Params;
+  return {
+    page: paramsObject["page"],
+    limit: paramsObject["limit"],
+    search_term: paramsObject["searchTerm"],
+  } as Params;
 }
 
 export function stopPropagationOnClick<T>(
@@ -64,3 +68,15 @@ export const isTweetSearchAMatch = (
   );
 };
 
+export function getPercievedNumberOfRecord<T>(
+  stateBool: boolean,
+  origBool: boolean,
+  loadedNumberOfRecords: T[]
+) {
+  if(stateBool && !origBool)
+    return loadedNumberOfRecords.length + 1
+  else if(!stateBool && origBool)
+    return loadedNumberOfRecords.length - 1
+  else
+    return loadedNumberOfRecords.length;
+}
