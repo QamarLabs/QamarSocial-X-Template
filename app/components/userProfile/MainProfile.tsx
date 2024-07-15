@@ -54,8 +54,6 @@ const MainProfile = () => {
       <TweetComponents
         key={twt.tweet._id}
         tweet={twt}
-        pushNote={true}
-        userId={session && session.user ? (session.user as any)["_id"] : ""}
       />
     ),
     []

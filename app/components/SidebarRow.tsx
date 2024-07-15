@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import React, { SVGProps } from "react";
+import React, { SVGProps, useMemo } from "react";
 import { nonRoutableTitles } from "@utils/neo4j/index";
 import { signOut } from "next-auth/react";
 import { CommonLink, CommonLinkProps } from "./common/Links";
@@ -14,6 +14,10 @@ interface SidebarRowProps {
   classNames?: string;
 }
 
+const SIGN_OUT_TITLE = "Sign Out";
+const SIGN_IN_TITLE = "Sign In";
+const MORE_TITLE = "More";
+
 function SidebarRow({
   Icon,
   title,
@@ -26,21 +30,22 @@ function SidebarRow({
   const sidebarOnClick = async (e: React.MouseEvent) => {
     if (!nonRoutableTitles.includes(title)) router.push(href!);
     else {
-      if (title === "Sign In" || title === "More") onClick!(e);
-      if (title === "Sign Out") await signOut();
+      if (title === SIGN_IN_TITLE || title === MORE_TITLE) onClick!(e);
+      if (title === SIGN_OUT_TITLE) await signOut();
     }
   };
 
   const commonLinkProps: CommonLinkProps = {
     onClick: sidebarOnClick,
-    animatedLink: title === "Sign In",
+    animatedLink: title === SIGN_IN_TITLE,
   };
+  const showText = useMemo(() => [SIGN_IN_TITLE, SIGN_OUT_TITLE].some((showTextTitle: string) => showTextTitle == title), [title]);
 
   return (
     <>
       <CommonLink {...commonLinkProps}>
         <Icon className="h-4 w-4 md:h-6 md:w-6 flex-shrink-0" />
-        <p className="hidden group-hover:text-twitter md:inline-flex text-base font-light">
+        <p className={`${showText ? '' : 'hidden'} group-hover:text-twitter md:inline-flex text-base font-light`}>
           {title}
         </p>
       </CommonLink>

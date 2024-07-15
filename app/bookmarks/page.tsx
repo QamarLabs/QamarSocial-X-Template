@@ -11,29 +11,22 @@ const Feed = dynamic(() => import("@components/Feed"), { ssr: false });
 
 async function BookmarksPage() {
   const session = await getServerSession();
+  const username = session && session.user ? getEmailUsername(session?.user!.email!) : "";
   const bookmarks =
     session && session.user
-      ? await fetchBookmarks(getEmailUsername(session.user.email!))
+      ? await fetchBookmarks(username)
       : [];
 
   return (
     <React.Suspense fallback={<div>Loading...</div>}>
       <FeedContainer>
         <div>
+          <h1>Your Bookmarks</h1>
           {bookmarks && bookmarks.length ? (
             bookmarks.map((bookmark, bookmarkKey) => (
               <TweetComponents
                 key={bookmark.tweet._id ?? bookmarkKey}
                 tweet={bookmark}
-                pushNote={true}
-                userId={session?.user ? (session.user as any)["_id"] : ""}
-                bookmarks={
-                  session?.user ? (session.user as any)["bookmarks"] : ""
-                }
-                retweets={session?.user ? (session.user as any)["retweets"] : ""}
-                likedTweets={
-                  session?.user ? (session.user as any)["likedTweets"] : ""
-                }
               />
             ))
           ) : (

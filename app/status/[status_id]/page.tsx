@@ -38,8 +38,6 @@ const StatusPage = async ({ params }: StatusPageProps) => {
         <Suspense fallback={<h4 className="text-body">Loading...</h4>}>
           <TweetComponent
             tweet={tweetData.tweet ?? {}}
-            pushNote={true}
-            userId={user ? (user as any)["_id"] : ""}
           />
         </Suspense>
       </div>

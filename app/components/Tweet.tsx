@@ -25,37 +25,29 @@ import { bookmarkTweet } from "@utils/user/bookmarkTweet";
 import { useDispatch } from "react-redux";
 import { toggleLoginModal } from "@localredux/slices/modals";
 import { BookmarkIcon as BookmarkFillIcon } from "@heroicons/react/solid";
+import { useSession } from "next-auth/react";
 
 interface Props {
   tweet: TweetToDisplay;
-  comments?: Comment[];
-  userId: string | undefined;
-  username?: string | undefined;
-  bookmarks?: string[];
-  retweets?: string[];
-  likedTweets?: string[];
-  pushNote: boolean;
 }
 
 function TweetComponent({
   tweet,
-  comments,
-  userId,
-  username,
-  bookmarks,
-  retweets,
-  likedTweets,
 }: Props) {
   const dispatch = useDispatch();
   const router = useRouter();
-  const [currentComments, setCurrentComments] = useState<Comment[]>(
-    comments ?? []
-  );
+  const { data: session } = useSession();
+  const [currentComments, setCurrentComments] = useState<Comment[]>(() => {
+    const comments = session && session.user ? (session.user as any).comments : [];
+    return comments ?? []
+  });
+
   const [input, setInput] = useState<string>("");
   const [commentBoxOpen, setCommentBoxOpen] = useState<boolean>(false);
   const [isBookmarked, setIsBookmarked] = useState<boolean>(false);
   const [isRetweeted, setIsRetweeted] = useState<boolean>(false);
   const [isLiked, setIsLiked] = useState<boolean>(false);
+  
   const initiallyBooleanValues = useRef<{
     retweeted: boolean;
     liked: boolean;
@@ -85,10 +77,11 @@ function TweetComponent({
     [isLiked]
   );
   const numberOfComments = useMemo(() => {
+    const username = session && session.user && (session.user as any).username
     return currentComments.some((comm: Comment) => comm.username === username)
       ? currentComments.length + 1
       : currentComments.length;
-  }, [currentComments]);
+  }, [currentComments, session]);
   // const isBookmarkedRef = useRef<boolean>(bookmarks?.some(bk => bk === tweet.tweet._id) ?? false);
 
   const tweetInfo = tweet.tweet;
@@ -99,31 +92,33 @@ function TweetComponent({
   const checkUserIsLoggedInBeforeUpdatingTweet = async (
     callback: () => Promise<void>
   ) => {
-    if (!userId) return dispatch(toggleLoginModal(true));
+    if (session && session.user && !(session.user as any)['_id']) return dispatch(toggleLoginModal(true));
 
     await callback();
   };
 
   useLayoutEffect(() => {
     //If any of the bookmarks are not undefined, that means
-    if (userId) {
+    if (session && session.user && (session.user as any)['_id']) {
+      const likedTweets = session?.user ? (session.user as any)["likedTweets"] : [];
+      const retweets = session?.user ? (session.user as any)["retweets"] : [];
       const twtAlreadyLiked =
-        likedTweets?.some((likedTweet) => likedTweet === tweet.tweet._id) ??
+        likedTweets?.some((likedTweet: string) => likedTweet === tweet.tweet._id) ??
         false;
 
       const twtAlreadyRetweeted =
-        retweets?.some((retweet) => retweet === tweet.tweet._id) ?? false;
+        retweets?.some((retweet: string) => retweet === tweet.tweet._id) ?? false;
 
       initiallyBooleanValues.current = {
         liked: twtAlreadyLiked,
         retweeted: twtAlreadyRetweeted,
         commented: false,
       };
-      setIsBookmarked(bookmarks?.some((bk) => bk === tweet.tweet._id) ?? false);
+      setIsBookmarked((session.user as any).bookmarks?.some((bk: string) => bk === tweet.tweet._id) ?? false);
       setIsRetweeted(twtAlreadyRetweeted);
       setIsLiked(twtAlreadyLiked);
     }
-  }, [userId]);
+  }, [session]);
 
   const handleSubmit = async (
     e: React.MouseEvent<HTMLButtonElement, globalThis.MouseEvent>
@@ -152,8 +147,8 @@ function TweetComponent({
   const onLikeTweet = async () => {
     const beforeUpdate = isLiked;
     try {
-      setIsLiked(!isLiked);
       await checkUserIsLoggedInBeforeUpdatingTweet(async () => {
+        setIsLiked(!isLiked);
         await likeTweet(tweet.tweet._id, userId!, isLiked);
       });
     } catch {
@@ -164,8 +159,8 @@ function TweetComponent({
   const onRetweet = async () => {
     const beforeUpdate = isRetweeted;
     try {
-      setIsRetweeted(!isRetweeted);
       await checkUserIsLoggedInBeforeUpdatingTweet(async () => {
+        setIsRetweeted(!isRetweeted);
         await retweet(tweet.tweet._id, userId!, isRetweeted);
       });
     } catch {
@@ -178,14 +173,17 @@ function TweetComponent({
   const onBookmarkTweet = async () => {
     const beforeUpdate = isBookmarked;
     try {
-      setIsBookmarked(!isBookmarked);
       await checkUserIsLoggedInBeforeUpdatingTweet(async () => {
+        setIsBookmarked(!isBookmarked);
         await bookmarkTweet(tweet.tweet._id, userId!, isBookmarked);
       });
     } catch {
       setIsBookmarked(beforeUpdate);
     }
   };
+
+
+  const userId = useMemo(() => session && session.user ? (session.user as any)['_id'] : "", [session]);
 
   return (
     <div

@@ -16,8 +16,6 @@ const NotificationTabsComponent = () => {
       <TweetComponent
         key={twt.tweet._id}
         tweet={twt}
-        pushNote={true}
-        userId={""}
       />
     ),
     []

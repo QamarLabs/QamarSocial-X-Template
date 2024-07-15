@@ -97,6 +97,7 @@ function Feed({ title, filterKey, hideTweetBox, tweets }: Props) {
 
   return (
     <div className="col-span-7 scrollbar-hide border-x max-h-screen overflow-scroll lg:col-span-5 dark:border-gray-800">
+      {title && <h1>{title}</h1>}
       <div>
         {session && !hideTweetBox && (
           <TweetBox filterKey={filterKey ? filterKey : FilterKeys.Normal} />
@@ -111,11 +112,6 @@ function Feed({ title, filterKey, hideTweetBox, tweets }: Props) {
               <TweetComponents
                 key={tweet.tweet._id ?? tweetKey}
                 tweet={tweet}
-                pushNote={true}
-                userId={userId}
-                bookmarks={bookmarks}
-                retweets={retweets}
-                likedTweets={likedTweets}
               />
             ))}
           </>

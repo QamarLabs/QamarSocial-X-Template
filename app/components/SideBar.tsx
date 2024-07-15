@@ -20,14 +20,13 @@ import DarkSwitch from "./DarkSwitch";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { stopPropagationOnClick } from "@utils/neo4j/index";
+import { getEmailUsername, stopPropagationOnClick } from "@utils/neo4j/index";
 import { User } from "typings";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@localredux/store";
 import { toggleLoginModal } from "@localredux/slices/modals";
 
-type SideBarProps = {
-};
+type SideBarProps = {};
 
 const SideBar = ({}: SideBarProps) => {
   const { data: session } = useSession();
@@ -38,24 +37,27 @@ const SideBar = ({}: SideBarProps) => {
 
   const openModal = () => dispatch(toggleLoginModal(true));
 
-  const handleDropdownEnter = useCallback(() => setIsDropdownOpen(!isDropdownOpen), []);
+  const handleDropdownEnter = useCallback(
+    () => setIsDropdownOpen(!isDropdownOpen),
+    []
+  );
   // console.log("session.user:", session!.user);
   const username = session ? (session!.user as User).username : "";
 
   return (
     <>
-      <div className="col-span-1 sm:col-span-2 flex flex-col item-center px-1 md:px-4 md:items-start">
-      <div className="flex justify-start">
-        <img
-          className={`
+      <div className="col-span-1 sm:col-span-2 flex flex-col item-center mt-2 md:mt-0 md:px-1 md:px-4 md:items-start">
+        <div className="flex justify-start">
+          <img
+            className={`
               m-0 h-full w-full md:h-13 md:w-14 transition-all duration-200 
               hover:bg-gray-100 dark:hover:bg-gray-600
           `}
-          src="https://res.cloudinary.com/aa1997/image/upload/v1717352649/k5kuqij3llmmf5mzsex7.png"
-          alt=""
-          style={{ maxWidth: 'unset' }}
-          onClick={() => router.push("/")}
-        />
+            src="https://res.cloudinary.com/aa1997/image/upload/v1717352649/k5kuqij3llmmf5mzsex7.png"
+            alt=""
+            style={{ maxWidth: "unset" }}
+            onClick={() => router.push("/")}
+          />
         </div>
         <SidebarRow Icon={HashtagIcon} title="Explore" href="/explore" />
         <SidebarRow
@@ -77,8 +79,12 @@ const SideBar = ({}: SideBarProps) => {
 
           )
         } */}
-        <div className="relative more-container" >
-          <SidebarRow Icon={DotsCircleHorizontalIcon} title="More"onClick={handleDropdownEnter} />
+        <div className="relative more-container">
+          <SidebarRow
+            Icon={DotsCircleHorizontalIcon}
+            title="More"
+            onClick={handleDropdownEnter}
+          />
           {isDropdownOpen && (
             <div className="absolute left-0 bottom-100 mt-2 w-48 rounded-md shadow-lg ring-1 bg-white dark:bg-[#000000] ring-black ring-opacity-5 z-40">
               <div
@@ -123,7 +129,7 @@ const SideBar = ({}: SideBarProps) => {
               {/* <div className="flex flex-col justify-center  p-3 opacity-50 text-xs sm:text-sm lg:text-md"> */}
               <div className="flex flex-col display-none md:display-initial hidden group-hover:text-twitter md:inline-flex text-base font-light text-xs lg:text-sm">
                 <p>{session!.user!.name}</p>
-                <p>@{session!.user!.email}</p>
+                <p>@{getEmailUsername(session!.user!.email!)}</p>
               </div>
             </div>
           </>

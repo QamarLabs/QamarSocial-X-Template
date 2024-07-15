@@ -14,17 +14,17 @@ const DarkSwitch: React.FC<DarkSwitchProps> = () => {
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       className="group flex max-w-fit
-      cursor-pointer items-center space-x-2 rounded-full px-6 mt-6 py-3
-      transition-all duration-200 hover:bg-purple-200 dark:bg-gray-900 bg-gray-50"
+      cursor-pointer items-center space-x-2 rounded-full px-2 py-1 mx-1 lg:px-6 my-1 md:mt-6 lg:py-3
+      transition-all duration-200 hover:bg-purple-200 dark:bg-gray-900 bg-gray-50 dark:hover:opacity-50 dark:hover:text-purple-300"
       onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
     >
       {resolvedTheme === "dark" ? (
-        <SunIcon className="w-6 h-6" />
+        <SunIcon className="w-5 h-5 md:w-6 md:h-6" />
       ) : (
-        <MoonIcon className="w-6 h-6" />
+        <MoonIcon className="w-5 h-5 md:w-6 md:h-6" />
       )}
 
-      <p className="hidden group-hover:text-twitter md:inline-flex text-base font-light">
+      <p className="hidden display-none md:display-initial group-hover:text-twitter md:inline-flex text-base font-light">
         {resolvedTheme === "dark" ? "Light Mod" : "Dark Mod"}
       </p>
     </motion.div>

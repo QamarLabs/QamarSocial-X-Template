@@ -13,7 +13,7 @@ export function CommonLink(props: React.PropsWithChildren<CommonLinkProps>) {
       className={`
         ${
           props.animatedLink
-            ? `group flex max-w-fit 
+            ? `group flex md:max-w-fit w-100 md:w-unset 
       cursor-pointer items-center space-x-2 px-4 py-3
       transition-all duration-200 animate-pulse text-purple-500 hover:bg-purple-100 dark:hover:bg-[#000000] dark:hover:opacity-50 dark:text-purple-300`
             : `group flex max-w-fit 
